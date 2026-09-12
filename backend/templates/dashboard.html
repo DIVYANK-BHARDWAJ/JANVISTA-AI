@@ -61,9 +61,19 @@
               <i class="bi bi-sliders me-1 text-success"></i> Priority Simulator
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link px-3 py-1 text-slate-300 hover-text-white fs-7 fw-medium" href="#grievances-section">
+              <i class="bi bi-megaphone-fill me-1 text-warning"></i> Public Grievances
+            </a>
+          </li>
         </ul>
 
         <div class="d-flex flex-wrap align-items-center gap-2">
+          <!-- File Grievance Direct Button -->
+          <button class="btn btn-warning btn-sm rounded-pill fw-bold text-dark px-3 py-1.5 shadow-sm d-flex align-items-center gap-1.5 fs-7" data-bs-toggle="modal" data-bs-target="#citizenGrievanceModal">
+            <i class="bi bi-pencil-fill"></i> File Grievance
+          </button>
+
           <!-- Role Selector -->
           <div class="dropdown">
             <button class="btn btn-sm btn-outline-light dropdown-toggle fw-semibold rounded-pill px-3 fs-7" type="button" data-bs-toggle="dropdown" id="roleBtn">
@@ -115,6 +125,9 @@
           </div>
           <div class="col-lg-4 text-lg-end">
             <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+              <button class="btn btn-warning text-dark btn-sm rounded-pill px-3 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#citizenGrievanceModal">
+                <i class="bi bi-pencil-fill"></i> File Grievance (जन सेवा)
+              </button>
               <button class="btn btn-dark btn-sm rounded-pill px-3 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" id="btnRefreshData">
                 <i class="bi bi-arrow-clockwise"></i> Refresh Intelligence
               </button>
@@ -123,6 +136,7 @@
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -674,10 +688,73 @@
             </div>
           </div>
         </div>
+    <!-- Public Grievance Feed & Decision Intake Section -->
+    <section class="card border-0 shadow-sm rounded-3 mb-4" id="grievances-section">
+      <div class="card-header bg-white border-bottom border-slate-200 py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <h5 class="mb-0 fw-bold text-slate-900 fs-6 d-flex align-items-center gap-2">
+            <i class="bi bi-megaphone-fill text-warning"></i>
+            Public Grievance Ledger & Decision Intake (जन सेवा संकेत)
+          </h5>
+          <span class="text-secondary fs-8">Direct citizen feedback converted into infrastructure demand signals</span>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <!-- Quick Tracking Search -->
+          <div class="input-group input-group-sm" style="max-width: 280px;">
+            <input type="text" class="form-control rounded-start-pill text-uppercase fs-8" id="txtTrackInput" placeholder="Enter Tracking ID (e.g. JAN-2026-UP-84219)">
+            <button class="btn btn-outline-dark rounded-end-pill px-3 fs-8 fw-semibold" type="button" id="btnTrackLookup">
+              <i class="bi bi-search"></i> Track
+            </button>
+          </div>
+
+          <!-- File Grievance Modal Trigger -->
+          <button class="btn btn-warning btn-sm rounded-pill px-3 py-1.5 fw-bold text-dark d-inline-flex align-items-center gap-1.5 shadow-sm" data-bs-toggle="modal" data-bs-target="#citizenGrievanceModal">
+            <i class="bi bi-plus-circle-fill"></i> File New Grievance
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <!-- Tracking Alert Box (hidden by default) -->
+        <div id="trackResultBox" class="p-3 bg-light border-bottom border-slate-200 d-none">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+              <div>
+                <strong class="text-slate-900 fs-7" id="trackResultTitle">Tracking Result</strong>
+                <p class="text-secondary fs-8 mb-0" id="trackResultDetails"></p>
+              </div>
+            </div>
+            <button type="button" class="btn-close btn-sm" onclick="document.getElementById('trackResultBox').classList.add('d-none')"></button>
+          </div>
+        </div>
+
+        <!-- Table of Grievances -->
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 text-nowrap">
+            <thead class="table-light fs-8 text-uppercase tracking-wider text-secondary">
+              <tr>
+                <th class="ps-4">Tracking ID</th>
+                <th>Citizen Name</th>
+                <th>State & District</th>
+                <th>Infrastructure Category</th>
+                <th>Urgency</th>
+                <th>Grievance Summary</th>
+                <th>Status</th>
+                <th class="text-end pe-4">Submitted</th>
+              </tr>
+            </thead>
+            <tbody class="fs-7" id="grievancesTableBody">
+              <!-- Dynamically populated from Flask backend -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
   </main>
+
 
   <!-- Footer -->
   <footer class="bg-white border-top border-slate-200 py-3 text-center text-secondary fs-8">
@@ -798,6 +875,154 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal 4: Citizen Grievance Submission Modal (जन सेवा पोर्टल) -->
+  <div class="modal fade" id="citizenGrievanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg rounded-3">
+        <div class="modal-header bg-slate-900 text-white border-bottom border-slate-800 pb-3">
+          <div>
+            <h5 class="modal-title fw-bold fs-6 d-flex align-items-center gap-2">
+              <i class="bi bi-megaphone-fill text-warning"></i>
+              जन सेवा पोर्टल • File Citizen Grievance
+            </h5>
+            <span class="text-slate-400 fs-8">Direct public infrastructure signal intake — Government of India</span>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- Submission Form -->
+          <form id="grievanceForm">
+            <div class="row g-3">
+              <!-- Name -->
+              <div class="col-md-6">
+                <label for="citizenName" class="form-label fs-8 fw-bold text-slate-800">
+                  Full Name (पूरा नाम) <span class="text-danger">*</span>
+                </label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                  <input type="text" class="form-control" id="citizenName" placeholder="e.g. Ramesh Kumar" required>
+                </div>
+              </div>
+
+              <!-- Phone -->
+              <div class="col-md-6">
+                <label for="citizenPhone" class="form-label fs-8 fw-bold text-slate-800">
+                  Mobile Number (मोबाइल नंबर) <span class="text-secondary fw-normal fs-9">(Optional)</span>
+                </label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                  <input type="tel" class="form-control" id="citizenPhone" placeholder="e.g. +91 98765 43210">
+                </div>
+              </div>
+
+              <!-- State -->
+              <div class="col-md-6">
+                <label for="citizenState" class="form-label fs-8 fw-bold text-slate-800">
+                  State / UT (राज्य) <span class="text-danger">*</span>
+                </label>
+                <select class="form-select form-select-sm" id="citizenState" required>
+                  <option value="" selected disabled>-- Select Your State --</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Odisha">Odisha</option>
+                  <option value="Rajasthan">Rajasthan</option>
+                  <option value="Bihar">Bihar</option>
+                  <option value="Kerala">Kerala</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Andhra Pradesh">Andhra Pradesh</option>
+                  <option value="West Bengal">West Bengal</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Assam">Assam</option>
+                  <option value="Jharkhand">Jharkhand</option>
+                </select>
+              </div>
+
+              <!-- District / Village -->
+              <div class="col-md-6">
+                <label for="citizenDistrict" class="form-label fs-8 fw-bold text-slate-800">
+                  District & Village (जिला और गांव) <span class="text-danger">*</span>
+                </label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
+                  <input type="text" class="form-control" id="citizenDistrict" placeholder="e.g. Sitapur / Rampur Kalan" required>
+                </div>
+              </div>
+
+              <!-- Category -->
+              <div class="col-md-6">
+                <label for="citizenCategory" class="form-label fs-8 fw-bold text-slate-800">
+                  Infrastructure Category (श्रेणी) <span class="text-danger">*</span>
+                </label>
+                <select class="form-select form-select-sm" id="citizenCategory" required>
+                  <option value="Healthcare">Healthcare (Hospital, PHC, CHC, Ambulance)</option>
+                  <option value="Drinking Water">Drinking Water (Pipes, Filtration, Handpumps)</option>
+                  <option value="Roads & Bridges">Roads & Bridges (All-Weather Roads, Culverts)</option>
+                  <option value="Electricity & Solar">Electricity & Solar (Grid, Outages, Transformers)</option>
+                  <option value="Education & Schools">Education & Schools (Classrooms, Toilets)</option>
+                  <option value="Sanitation & Waste">Sanitation & Drainage (Sewage, Drains)</option>
+                </select>
+              </div>
+
+              <!-- Urgency -->
+              <div class="col-md-6">
+                <label for="citizenUrgency" class="form-label fs-8 fw-bold text-slate-800">
+                  Urgency Level (प्राथमिकता) <span class="text-danger">*</span>
+                </label>
+                <select class="form-select form-select-sm" id="citizenUrgency" required>
+                  <option value="MODERATE">Moderate / Standard Priority</option>
+                  <option value="HIGH">High Priority (Affecting whole village/ward)</option>
+                  <option value="CRITICAL">Critical Emergency (Life safety / Immediate threat)</option>
+                </select>
+              </div>
+
+              <!-- Description -->
+              <div class="col-12">
+                <label for="citizenDescription" class="form-label fs-8 fw-bold text-slate-800">
+                  Grievance Details (शिकायत का विवरण) <span class="text-danger">*</span>
+                </label>
+                <textarea class="form-control fs-7" id="citizenDescription" rows="3" placeholder="Explain the problem clearly (e.g., Road is broken for 6 months, no doctors at CHC, tap water is polluted...)" required></textarea>
+                <div class="form-text fs-9 text-slate-500">You can write in English, Hindi, or your native language.</div>
+              </div>
+
+              <!-- Feedback / Success Container inside Modal -->
+              <div class="col-12 d-none" id="modalGrievanceSuccess">
+                <div class="alert alert-success border-0 rounded-3 p-3">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+                    <strong class="text-slate-900 fs-7">Grievance Registered Successfully!</strong>
+                  </div>
+                  <p class="fs-8 text-secondary mb-2">
+                    Your request has been ingested as a verified citizen demand signal. Save your official Tracking ID:
+                  </p>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-slate-900 text-white fs-6 px-3 py-1.5 rounded-pill fw-mono" id="lblCreatedTrackingId">
+                      JAN-2026-UP-XXXXX
+                    </span>
+                    <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-2.5 py-0.5 fs-8" id="btnCopyTrackingId">
+                      <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-2 border-top border-slate-200 d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-warning text-dark fw-bold btn-sm rounded-pill px-4 shadow-sm" id="btnSubmitGrievance">
+                <i class="bi bi-send-fill me-1"></i> Submit Grievance
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- Toast Notification Container -->
   <div class="toast-container position-fixed bottom-0 end-0 p-3">

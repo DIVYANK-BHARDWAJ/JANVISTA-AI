@@ -148,3 +148,114 @@ PIPELINE_STAGES = [
     {"step": "06", "name": "Priority Score", "description": "Deterministic 6-factor decision engine"},
     {"step": "07", "name": "Evidence & Action", "description": "Full audit-backed policy recommendation"},
 ]
+
+# Initial Seed Citizen Grievances
+CITIZEN_GRIEVANCES = [
+    {
+        "tracking_id": "JAN-2026-UP-84219",
+        "name": "Ramesh Chandra",
+        "phone": "+91 98765 43210",
+        "state": "Uttar Pradesh",
+        "district": "Sitapur",
+        "category": "Healthcare",
+        "urgency": "CRITICAL",
+        "description": "Our local Community Health Centre has had no surgeon or functioning blood bank for 8 months. Patients must travel 68km to Lucknow in emergencies.",
+        "status": "UNDER_REVIEW",
+        "timestamp": "2026-09-12 11:20",
+    },
+    {
+        "tracking_id": "JAN-2026-OR-84218",
+        "name": "Sunita Majhi",
+        "phone": "+91 91234 56789",
+        "state": "Odisha",
+        "district": "Koraput",
+        "category": "Drinking Water",
+        "urgency": "HIGH",
+        "description": "Piped drinking water has stopped in 3 tribal hamlets since last month. Borewell water is yellow and causing stomach illness.",
+        "status": "UNDER_REVIEW",
+        "timestamp": "2026-09-12 09:45",
+    },
+    {
+        "tracking_id": "JAN-2026-RJ-84217",
+        "name": "Kailash Bishnoi",
+        "phone": "+91 99887 76655",
+        "state": "Rajasthan",
+        "district": "Barmer",
+        "category": "Electricity & Solar",
+        "urgency": "MODERATE",
+        "description": "Frequent power outages of 14 hours daily ruining crops and water pumps. Requesting solar feeder setup.",
+        "status": "RECORDED",
+        "timestamp": "2026-09-11 16:30",
+    },
+    {
+        "tracking_id": "JAN-2026-BR-84216",
+        "name": "Md. Aslam",
+        "phone": "+91 97712 34567",
+        "state": "Bihar",
+        "district": "Purnia",
+        "category": "Roads & Bridges",
+        "urgency": "HIGH",
+        "description": "Flood washed away culvert bridge on main block road. Over 4,000 villagers cannot reach hospital or market.",
+        "status": "FIELD_AUDIT_REQUESTED",
+        "timestamp": "2026-09-11 14:15",
+    },
+]
+
+STATE_CODES = {
+    "Uttar Pradesh": "UP",
+    "Odisha": "OR",
+    "Rajasthan": "RJ",
+    "Bihar": "BR",
+    "Kerala": "KL",
+    "Maharashtra": "MH",
+    "Madhya Pradesh": "MP",
+    "Tamil Nadu": "TN",
+    "Karnataka": "KA",
+    "Andhra Pradesh": "AP",
+    "West Bengal": "WB",
+    "Punjab": "PB",
+    "Gujarat": "GJ",
+    "Assam": "AS",
+    "Jharkhand": "JH",
+}
+
+
+def add_citizen_grievance(name: str, state: str, district: str, category: str, description: str, phone: str = "", urgency: str = "MODERATE"):
+    """
+    Records a new citizen grievance and returns the created record with Tracking ID.
+    Zero external API key required.
+    """
+    import random
+    from datetime import datetime
+
+    state_code = STATE_CODES.get(state, "IN")
+    random_num = random.randint(10000, 99999)
+    tracking_id = f"JAN-2026-{state_code}-{random_num}"
+
+    new_record = {
+        "tracking_id": tracking_id,
+        "name": name.strip(),
+        "phone": phone.strip() if phone else "Not provided",
+        "state": state.strip(),
+        "district": district.strip(),
+        "category": category.strip(),
+        "urgency": urgency.strip().upper(),
+        "description": description.strip(),
+        "status": "UNDER_REVIEW",
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+    CITIZEN_GRIEVANCES.insert(0, new_record)
+
+    # Increment request counter in Sitapur or matching hotspot if applicable
+    for h in HOTSPOTS:
+        if state_code in h.get("region_name", "") or state in h.get("region_name", ""):
+            h["citizen_requests"] = h.get("citizen_requests", 0) + 1
+            break
+
+    return new_record
+
+
+def get_citizen_grievances():
+    return CITIZEN_GRIEVANCES
+

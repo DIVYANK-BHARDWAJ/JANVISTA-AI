@@ -161,7 +161,196 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast(`<i class="bi bi-person-check-fill me-1 text-info"></i> Active view switched to: <strong>${roleName}</strong>`);
     });
   });
+
+  // ==========================================
+  // CITIZEN GRIEVANCE PORTAL & TRACKING SYSTEM
+  // ==========================================
+  const grievanceForm = document.getElementById("grievanceForm");
+  const modalGrievanceSuccess = document.getElementById("modalGrievanceSuccess");
+  const lblCreatedTrackingId = document.getElementById("lblCreatedTrackingId");
+  const btnCopyTrackingId = document.getElementById("btnCopyTrackingId");
+  const grievancesTableBody = document.getElementById("grievancesTableBody");
+  const btnTrackLookup = document.getElementById("btnTrackLookup");
+  const txtTrackInput = document.getElementById("txtTrackInput");
+  const trackResultBox = document.getElementById("trackResultBox");
+  const trackResultTitle = document.getElementById("trackResultTitle");
+  const trackResultDetails = document.getElementById("trackResultDetails");
+  const kpiRequestsValue = document.getElementById("kpi-requests-value");
+
+  // Fetch and display initial grievances
+  async function loadGrievances() {
+    if (!grievancesTableBody) return;
+    try {
+      const res = await fetch("/api/citizen/grievances");
+      const json = await res.json();
+      if (json.success && json.data) {
+        renderGrievancesTable(json.data);
+      }
+    } catch (err) {
+      console.error("Error loading grievances:", err);
+    }
+  }
+
+  function renderGrievancesTable(items) {
+    if (!grievancesTableBody) return;
+    grievancesTableBody.innerHTML = items.map((item) => {
+      let urgencyBadge = `<span class="badge bg-secondary">MODERATE</span>`;
+      if (item.urgency === "CRITICAL") {
+        urgencyBadge = `<span class="badge bg-danger">CRITICAL</span>`;
+      } else if (item.urgency === "HIGH") {
+        urgencyBadge = `<span class="badge bg-warning text-dark">HIGH</span>`;
+      }
+
+      let categoryBadge = `<span class="badge bg-primary-subtle text-primary border border-primary-subtle">${item.category}</span>`;
+      if (item.category.includes("Water")) {
+        categoryBadge = `<span class="badge bg-info-subtle text-info border border-info-subtle">${item.category}</span>`;
+      } else if (item.category.includes("Solar") || item.category.includes("Electricity")) {
+        categoryBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">${item.category}</span>`;
+      }
+
+      return `
+        <tr>
+          <td class="ps-4">
+            <span class="badge bg-slate-900 text-white rounded-pill px-2.5 py-1 fw-mono fs-8">
+              ${item.tracking_id}
+            </span>
+          </td>
+          <td class="fw-bold text-slate-900">${item.name}</td>
+          <td>
+            <div class="fw-semibold text-slate-800">${item.district}</div>
+            <div class="text-secondary fs-8">${item.state}</div>
+          </td>
+          <td>${categoryBadge}</td>
+          <td>${urgencyBadge}</td>
+          <td class="text-truncate" style="max-width: 260px;" title="${item.description}">
+            ${item.description}
+          </td>
+          <td>
+            <span class="badge bg-success-subtle text-success border border-success-subtle">
+              <i class="bi bi-clock-history me-1"></i> ${item.status.replace('_', ' ')}
+            </span>
+          </td>
+          <td class="text-end pe-4 text-secondary fs-8">${item.timestamp}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  // Handle grievance form submission
+  if (grievanceForm) {
+    grievanceForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const btnSubmit = document.getElementById("btnSubmitGrievance");
+      const origText = btnSubmit.innerHTML;
+      btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Submitting...`;
+      btnSubmit.disabled = true;
+
+      const payload = {
+        name: document.getElementById("citizenName").value,
+        phone: document.getElementById("citizenPhone").value,
+        state: document.getElementById("citizenState").value,
+        district: document.getElementById("citizenDistrict").value,
+        category: document.getElementById("citizenCategory").value,
+        urgency: document.getElementById("citizenUrgency").value,
+        description: document.getElementById("citizenDescription").value,
+      };
+
+      try {
+        const res = await fetch("/api/citizen/grievance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const json = await res.json();
+        if (json.success) {
+          // Show tracking ID in modal
+          lblCreatedTrackingId.textContent = json.tracking_id;
+          modalGrievanceSuccess.classList.remove("d-none");
+
+          // Update KPI Requests counter on dashboard
+          if (kpiRequestsValue) {
+            const currentNum = parseInt(kpiRequestsValue.textContent.replace(/,/g, "")) || 8421;
+            kpiRequestsValue.textContent = (currentNum + 1).toLocaleString();
+          }
+
+          // Reload table
+          await loadGrievances();
+
+          showToast(`<i class="bi bi-check-circle-fill me-1 text-success"></i> Grievance filed! Tracking ID: <strong>${json.tracking_id}</strong>`);
+
+          // Scroll grievances section into view when user closes modal
+          const modalEl = document.getElementById("citizenGrievanceModal");
+          modalEl.addEventListener("hidden.bs.modal", () => {
+            document.getElementById("grievances-section")?.scrollIntoView({ behavior: "smooth" });
+          }, { once: true });
+        } else {
+          showToast(`<i class="bi bi-exclamation-circle-fill me-1 text-danger"></i> ${json.error || "Submission failed"}`);
+        }
+      } catch (err) {
+        console.error("Submission error:", err);
+        showToast('<i class="bi bi-exclamation-triangle-fill me-1 text-danger"></i> Failed to connect to server.');
+      } finally {
+        btnSubmit.innerHTML = origText;
+        btnSubmit.disabled = false;
+      }
+    });
+  }
+
+  // Copy tracking ID
+  if (btnCopyTrackingId) {
+    btnCopyTrackingId.addEventListener("click", () => {
+      navigator.clipboard.writeText(lblCreatedTrackingId.textContent.trim());
+      btnCopyTrackingId.innerHTML = `<i class="bi bi-check-lg"></i> Copied!`;
+      setTimeout(() => {
+        btnCopyTrackingId.innerHTML = `<i class="bi bi-clipboard"></i> Copy`;
+      }, 2000);
+    });
+  }
+
+  // Tracking lookup
+  async function performTracking() {
+    const id = txtTrackInput.value.trim();
+    if (!id) {
+      showToast('<i class="bi bi-info-circle me-1 text-info"></i> Please enter a Tracking ID');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/citizen/track/${encodeURIComponent(id)}`);
+      const json = await res.json();
+
+      trackResultBox.classList.remove("d-none");
+      if (json.success && json.data) {
+        const item = json.data;
+        trackResultTitle.innerHTML = `<span class="badge bg-success me-1">FOUND</span> ${item.tracking_id} &bull; ${item.name}`;
+        trackResultDetails.innerHTML = `<strong>Category:</strong> ${item.category} | <strong>Location:</strong> ${item.district}, ${item.state} | <strong>Status:</strong> <span class="badge bg-primary">${item.status}</span> | <em>"${item.description}"</em>`;
+      } else {
+        trackResultTitle.innerHTML = `<span class="badge bg-danger me-1">NOT FOUND</span> No record found for ID: ${id}`;
+        trackResultDetails.innerHTML = `Please verify the Tracking ID or file a new grievance.`;
+      }
+    } catch (err) {
+      showToast('<i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> Error looking up tracking ID');
+    }
+  }
+
+  if (btnTrackLookup) {
+    btnTrackLookup.addEventListener("click", performTracking);
+  }
+  if (txtTrackInput) {
+    txtTrackInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        performTracking();
+      }
+    });
+  }
+
+  // Initial load
+  loadGrievances();
 });
+
 
 // Global hotspot row selector
 window.selectHotspot = function(index) {

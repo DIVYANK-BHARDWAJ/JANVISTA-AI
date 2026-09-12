@@ -6,8 +6,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
-from data import REGIONS, TOP_RECOMMENDATION, HOTSPOTS, PIPELINE_STAGES
+from data import (
+    REGIONS,
+    TOP_RECOMMENDATION,
+    HOTSPOTS,
+    PIPELINE_STAGES,
+    add_citizen_grievance,
+    get_citizen_grievances,
+)
 from priority_engine import calculate_priority_score
+
 
 
 app = Flask(
@@ -206,7 +214,87 @@ def dynamic_priority_calculation():
     })
 
 
+@app.route("/api/citizen/grievance", methods=["POST"])
+def submit_grievance():
+    """
+    Public Citizen Grievance Submission Endpoint.
+    Accepts: name, state, district, category, description, phone, urgency.
+    Returns: generated tracking_id and created grievance record.
+    Zero external API key required.
+    """
+    body = request.get_json(silent=True) or request.form or {}
+
+    name = body.get("name", "").strip()
+    state = body.get("state", "").strip()
+    district = body.get("district", "").strip()
+    category = body.get("category", "General Infrastructure").strip()
+    description = body.get("description", "").strip()
+    phone = body.get("phone", "").strip()
+    urgency = body.get("urgency", "MODERATE").strip()
+
+    if not name:
+        return jsonify({"success": False, "error": "Citizen Name is required."}), 400
+    if not state:
+        return jsonify({"success": False, "error": "State is required."}), 400
+    if not district:
+        return jsonify({"success": False, "error": "District / Village is required."}), 400
+    if not description:
+        return jsonify({"success": False, "error": "Grievance details are required."}), 400
+
+    new_record = add_citizen_grievance(
+        name=name,
+        state=state,
+        district=district,
+        category=category,
+        description=description,
+        phone=phone,
+        urgency=urgency,
+    )
+
+    return jsonify({
+        "success": True,
+        "message": "Grievance submitted successfully to National Decision Intelligence Intake.",
+        "tracking_id": new_record["tracking_id"],
+        "data": new_record,
+    }), 201
+
+
+@app.route("/api/citizen/grievances", methods=["GET"])
+def list_grievances():
+    """
+    Returns list of all submitted citizen grievances.
+    """
+    grievances = get_citizen_grievances()
+    return jsonify({
+        "success": True,
+        "count": len(grievances),
+        "data": grievances,
+    })
+
+
+@app.route("/api/citizen/track/<tracking_id>", methods=["GET"])
+def track_grievance(tracking_id):
+    """
+    Citizen Tracking ID Status Lookup.
+    """
+    tracking_id = tracking_id.strip().upper()
+    grievances = get_citizen_grievances()
+    record = next((g for g in grievances if g["tracking_id"].upper() == tracking_id), None)
+
+    if not record:
+        return jsonify({
+            "success": False,
+            "error": f"No grievance found with Tracking ID: {tracking_id}"
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "data": record,
+    })
+
+
 if __name__ == "__main__":
+
     print("=" * 60)
     print("JANVISTA AI Flask Backend Starting (Zero API Key Mode)")
     print("Available at: http://127.0.0.1:5000")
