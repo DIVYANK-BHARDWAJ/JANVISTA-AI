@@ -86,7 +86,7 @@ export const VoiceRecorder: React.FC<Props> = ({ onAudioRecorded, isLoading = fa
       {sampleTranscript && (
         <div className="bg-blue-50 border border-blue-200 p-3 rounded space-y-1">
           <span className="text-[10px] font-bold text-[#003366] uppercase tracking-wider block">Recorded Transcript</span>
-          <p className="text-xs text-slate-800 italic font-mono">"{sampleTranscript}"</p>
+          <p className="text-xs text-slate-800 italic font-mono">&quot;{sampleTranscript}&quot;</p>
         </div>
       )}
     </div>

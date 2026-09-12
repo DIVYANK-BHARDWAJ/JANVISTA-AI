@@ -288,6 +288,7 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
 
               {filePreviewUrl && (
                 <div className="flex items-center space-x-3 bg-white p-3 rounded border border-slate-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={filePreviewUrl} alt="Upload Preview" className="w-12 h-12 object-cover rounded border" />
                   <div className="text-xs">
                     <span className="font-bold text-slate-900 block">{uploadedFile?.name}</span>
@@ -396,7 +397,7 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
                     <span className="font-semibold text-slate-900 text-[11px]">{req.locationName}</span>
                     <CategoryBadge category={req.category} />
                   </div>
-                  <p className="text-[11px] text-slate-700 line-clamp-2 italic">"{req.normalizedText}"</p>
+                  <p className="text-[11px] text-slate-700 line-clamp-2 italic">&quot;{req.normalizedText}&quot;</p>
                   <span className="text-[10px] text-slate-500 block font-mono">{new Date(req.timestamp).toLocaleDateString()}</span>
                 </div>
               ))}

@@ -174,7 +174,7 @@ export const PortalGateway: React.FC<PortalGatewayProps> = ({ onSelectPortal }) 
                   <div className="w-5 h-5 rounded bg-slate-100 flex items-center justify-center shrink-0">
                     <Award className="w-3.5 h-3.5 text-slate-700" />
                   </div>
-                  <span>🎯 Audited Priority Scores & "WHY THIS?" Provenance</span>
+                  <span>🎯 Audited Priority Scores & &quot;WHY THIS?&quot; Provenance</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-5 h-5 rounded bg-slate-100 flex items-center justify-center shrink-0">
