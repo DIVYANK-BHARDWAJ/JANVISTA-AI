@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JANVISTA AI — National Infrastructure Decision Support</title>
+  
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap 5.3.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-slate-950 border-bottom border-slate-800 sticky-top py-2.5 shadow-sm">
+    <div class="container-fluid px-3 px-lg-4">
+      <a class="navbar-brand d-flex items-center gap-2" href="#">
+        <div class="brand-badge bg-primary text-white rounded-2 d-flex align-items-center justify-content-center">
+          <i class="bi bi-compass-fill fs-5"></i>
+        </div>
+        <div>
+          <div class="brand-title fw-bolder tracking-wide text-white lh-1">JANVISTA AI</div>
+          <div class="brand-subtitle text-slate-400 text-uppercase">National Decision Support</div>
+        </div>
+      </a>
+
+      <!-- Mobile toggle -->
+      <button class="navbar-toggler border-0 text-slate-300" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+        <i class="bi bi-list fs-3"></i>
+      </button>
+
+      <div class="collapse navbar-collapse" id="topNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-1">
+          <li class="nav-item">
+            <span class="nav-link active px-3 py-1 rounded-pill bg-slate-900 border border-slate-700 text-white fs-7 fw-semibold">
+              <i class="bi bi-speedometer2 me-1 text-info"></i> Executive Dashboard
+            </span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-3 py-1 text-slate-300 hover-text-white fs-7 fw-medium" href="#spotlight-section">
+              <i class="bi bi-lightning-charge me-1 text-warning"></i> Top Priority
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-3 py-1 text-slate-300 hover-text-white fs-7 fw-medium" href="#hotspots-section">
+              <i class="bi bi-fire me-1 text-danger"></i> Regional Hotspots
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-3 py-1 text-slate-300 hover-text-white fs-7 fw-medium" href="#simulator-section">
+              <i class="bi bi-sliders me-1 text-success"></i> Priority Simulator
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-3 py-1 text-slate-300 hover-text-white fs-7 fw-medium" href="#grievances-section">
+              <i class="bi bi-megaphone-fill me-1 text-warning"></i> Public Grievances
+            </a>
+          </li>
+        </ul>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <!-- File Grievance Direct Button -->
+          <button class="btn btn-warning btn-sm rounded-pill fw-bold text-dark px-3 py-1.5 shadow-sm d-flex align-items-center gap-1.5 fs-7" data-bs-toggle="modal" data-bs-target="#citizenGrievanceModal">
+            <i class="bi bi-pencil-fill"></i> File Grievance
+          </button>
+
+          <!-- Role Selector -->
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-light dropdown-toggle fw-semibold rounded-pill px-3 fs-7" type="button" data-bs-toggle="dropdown" id="roleBtn">
+              <i class="bi bi-person-badge me-1.5 text-primary"></i> <span id="currentRoleLabel">Policymaker</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-slate-700 bg-slate-900 text-slate-200">
+              <li><h6 class="dropdown-header text-uppercase text-slate-400 fs-8">Select Governance Role</h6></li>
+              <li><a class="dropdown-item text-slate-200 role-option active" href="#" data-role="Policymaker"><i class="bi bi-shield-check me-2 text-info"></i>Policymaker (National)</a></li>
+              <li><a class="dropdown-item text-slate-200 role-option" href="#" data-role="State Planner"><i class="bi bi-diagram-3 me-2 text-warning"></i>State Planner</a></li>
+              <li><a class="dropdown-item text-slate-200 role-option" href="#" data-role="District Collector"><i class="bi bi-geo-alt me-2 text-success"></i>District Collector</a></li>
+            </ul>
+          </div>
+
+          <!-- Zero-Key Offline Badge -->
+          <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle px-3 py-2 fs-7 fw-medium">
+            <i class="bi bi-shield-lock-fill me-1"></i> Offline / Zero-Key Mode
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container-fluid px-3 px-lg-4 py-4 max-w-7xl">
+
+    <!-- Official Government Header Banner -->
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4 official-banner">
+      <div class="card-body p-4 p-md-4 position-relative">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+          <span class="badge bg-dark-subtle text-dark border border-dark-subtle px-2.5 py-1 text-uppercase fw-bold fs-8 tracking-wider">
+            National Vision & Infrastructure Strategic Targeting Assistant
+          </span>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle px-2.5 py-1 text-uppercase fw-semibold fs-8">
+            <i class="bi bi-database-check me-1"></i> Data Classification: Synthetic Validated
+          </span>
+          <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2.5 py-1 text-uppercase fw-semibold fs-8">
+            Model v1.0.0 (Audited)
+          </span>
+        </div>
+
+        <div class="row align-items-center g-3 pt-1">
+          <div class="col-lg-8">
+            <h1 class="h3 fw-bolder text-slate-900 tracking-tight mb-2">
+              WHERE SHOULD WE ACT FIRST?
+            </h1>
+            <p class="text-secondary fs-6 mb-0 lead-text">
+              Transforming fragmented multilingual citizen feedback into explainable, evidence-backed public infrastructure priorities for national and state decision-makers.
+            </p>
+          </div>
+          <div class="col-lg-4 text-lg-end">
+            <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+              <button class="btn btn-warning text-dark btn-sm rounded-pill px-3 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#citizenGrievanceModal">
+                <i class="bi bi-pencil-fill"></i> File Grievance (जन सेवा)
+              </button>
+              <button class="btn btn-dark btn-sm rounded-pill px-3 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2" id="btnRefreshData">
+                <i class="bi bi-arrow-clockwise"></i> Refresh Intelligence
+              </button>
+              <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="bi bi-download"></i> Export Brief
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <section class="mb-4" id="kpis-section">
+      <div class="row g-3" id="kpiCardsContainer">
+        <!-- Injected via dynamic JS or SSR -->
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="card kpi-card border-0 shadow-sm rounded-3 h-100 kpi-sky">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-secondary fs-7 fw-semibold text-uppercase tracking-wider">Citizen Requests</span>
+                <span class="kpi-icon-pill bg-sky-subtle text-sky"><i class="bi bi-chat-square-text-fill"></i></span>
+              </div>
+              <div class="kpi-value text-slate-900" id="kpi-requests-value">8,421</div>
+              <div class="text-secondary fs-8 mt-1" id="kpi-requests-sub">Analyzed across 5 states</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="card kpi-card border-0 shadow-sm rounded-3 h-100 kpi-purple">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-secondary fs-7 fw-semibold text-uppercase tracking-wider">Demand Clusters</span>
+                <span class="kpi-icon-pill bg-purple-subtle text-purple"><i class="bi bi-people-fill"></i></span>
+              </div>
+              <div class="kpi-value text-slate-900" id="kpi-clusters-value">5 Clusters</div>
+              <div class="text-secondary fs-8 mt-1" id="kpi-clusters-sub">Spatial & semantic aggregation</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="card kpi-card border-0 shadow-sm rounded-3 h-100 kpi-rose">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-secondary fs-7 fw-semibold text-uppercase tracking-wider">Hotspots Detected</span>
+                <span class="kpi-icon-pill bg-rose-subtle text-rose"><i class="bi bi-fire"></i></span>
+              </div>
+              <div class="kpi-value text-slate-900" id="kpi-hotspots-value">5 Regions</div>
+              <div class="text-secondary fs-8 mt-1" id="kpi-hotspots-sub">Sitapur UP ranked #1</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="card kpi-card border-0 shadow-sm rounded-3 h-100 kpi-amber">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-secondary fs-7 fw-semibold text-uppercase tracking-wider">Max Gap Index</span>
+                <span class="kpi-icon-pill bg-amber-subtle text-amber"><i class="bi bi-hospital-fill"></i></span>
+              </div>
+              <div class="kpi-value text-slate-900" id="kpi-gap-value">91.2 %</div>
+              <div class="text-secondary fs-8 mt-1" id="kpi-gap-sub">Sitapur Healthcare Deficit</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="card kpi-card border-0 shadow-sm rounded-3 h-100 kpi-emerald">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-secondary fs-7 fw-semibold text-uppercase tracking-wider">Top Priority Score</span>
+                <span class="kpi-icon-pill bg-emerald-subtle text-emerald"><i class="bi bi-award-fill"></i></span>
+              </div>
+              <div class="kpi-value text-emerald-emphasis" id="kpi-priority-value">89.4 / 100</div>
+              <div class="text-secondary fs-8 mt-1" id="kpi-priority-sub">Model v1.0.0 (Audited)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Priority Opportunity Spotlight & Explainability Row -->
+    <section class="mb-4" id="spotlight-section">
+      <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="card-header bg-white border-bottom border-slate-200 py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-danger text-white rounded-pill px-2.5 py-1 fs-8 fw-bold text-uppercase">
+              <i class="bi bi-pin-angle-fill me-1"></i> National Priority #1
+            </span>
+            <h5 class="mb-0 fw-bold text-slate-900 fs-6">
+              Highest Priority Opportunity Spotlight
+            </h5>
+          </div>
+          <span class="text-secondary fs-8 fw-medium">
+            Computed by Deterministic Multi-Factor Decision Engine
+          </span>
+        </div>
+
+        <div class="card-body p-4">
+          <div class="row g-4">
+            <!-- Left Column: Recommendation Summary -->
+            <div class="col-lg-5 border-end-lg border-slate-200">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0.5 fs-8 fw-bold" id="spotlightUrgency">
+                  CRITICAL DEFICIT
+                </span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5 fs-8 fw-bold" id="spotlightCategory">
+                  Healthcare
+                </span>
+                <span class="badge bg-secondary-subtle text-secondary px-2 py-0.5 fs-8 fw-semibold" id="spotlightRegion">
+                  Sitapur District, UP
+                </span>
+              </div>
+
+              <h3 class="h5 fw-bolder text-slate-900 mb-2" id="spotlightTitle">
+                Establish 100-Bed Sub-Divisional Hospital & Trauma Unit
+              </h3>
+
+              <p class="text-secondary fs-7 mb-3 leading-relaxed" id="spotlightDesc">
+                Severe maternal and emergency transport deficit coupled with 94/100 citizen grievance density. Nearest tertiary trauma facility is 68 km away, exceeding golden-hour survival benchmarks.
+              </p>
+
+              <!-- Key Impact Metrics Box -->
+              <div class="bg-slate-100 rounded-3 p-3 mb-3 border border-slate-200">
+                <div class="row g-2 text-center">
+                  <div class="col-6 col-sm-3 border-end border-slate-300">
+                    <div class="text-secondary fs-8 fw-medium">Estimated Capex</div>
+                    <div class="fw-bold text-slate-900 fs-6">₹42.5 Cr</div>
+                  </div>
+                  <div class="col-6 col-sm-3 border-end-sm border-slate-300">
+                    <div class="text-secondary fs-8 fw-medium">Population Impact</div>
+                    <div class="fw-bold text-slate-900 fs-6">420,000</div>
+                  </div>
+                  <div class="col-6 col-sm-3 border-end border-slate-300">
+                    <div class="text-secondary fs-8 fw-medium">Current Transit</div>
+                    <div class="fw-bold text-danger fs-6">94 Mins</div>
+                  </div>
+                  <div class="col-6 col-sm-3">
+                    <div class="text-secondary fs-8 fw-medium">Target Transit</div>
+                    <div class="fw-bold text-success fs-6">25 Mins</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#actionModal">
+                  <i class="bi bi-check2-circle"></i> Approve In-Principle
+                </button>
+                <button class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#evidenceModal">
+                  <i class="bi bi-journal-text"></i> View Evidence Chain
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Column: "Why This?" Mathematical Breakdown -->
+            <div class="col-lg-7">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h6 class="fw-bolder text-slate-900 mb-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-calculator-fill text-primary"></i>
+                    Explainability Breakdown ("Why This?")
+                  </h6>
+                  <span class="text-secondary fs-8">Deterministic 6-Factor Multi-Criteria Analysis (MCA)</span>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fs-6 fw-bolder px-2.5 py-1">
+                    Score: 89.4 / 100
+                  </span>
+                </div>
+              </div>
+
+              <!-- Progress Bars for 6 Factors -->
+              <div class="factor-bars-list space-y-3" id="factorBarsContainer">
+                <!-- Factor 1 -->
+                <div class="factor-item">
+                  <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                    <span class="text-slate-800">
+                      Citizen Demand Signal <span class="badge bg-light text-secondary border fs-8">Weight: 30%</span>
+                    </span>
+                    <span class="text-slate-900">94.0 raw &bull; <strong class="text-primary">+28.2 pts</strong></span>
+                  </div>
+                  <div class="progress" style="height: 7px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 94%;"></div>
+                  </div>
+                  <div class="text-slate-500 fs-9 mt-0.5">Source: Multilingual Grievance Signals (Hindi, Awadhi, Bhojpuri)</div>
+                </div>
+
+                <!-- Factor 2 -->
+                <div class="factor-item mt-2.5">
+                  <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                    <span class="text-slate-800">
+                      Infrastructure Gap Index <span class="badge bg-light text-secondary border fs-8">Weight: 25%</span>
+                    </span>
+                    <span class="text-slate-900">91.2 raw &bull; <strong class="text-danger">+22.8 pts</strong></span>
+                  </div>
+                  <div class="progress" style="height: 7px;">
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: 91.2%;"></div>
+                  </div>
+                  <div class="text-slate-500 fs-9 mt-0.5">Source: District Facility Audit & Capacity Gap Engine</div>
+                </div>
+
+                <!-- Factor 3 -->
+                <div class="factor-item mt-2.5">
+                  <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                    <span class="text-slate-800">
+                      Population Vulnerability <span class="badge bg-light text-secondary border fs-8">Weight: 15%</span>
+                    </span>
+                    <span class="text-slate-900">86.5 raw &bull; <strong class="text-warning">+13.0 pts</strong></span>
+                  </div>
+                  <div class="progress" style="height: 7px;">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 86.5%;"></div>
+                  </div>
+                  <div class="text-slate-500 fs-9 mt-0.5">Source: NITI Aayog Multidimensional Vulnerability Index (MVI)</div>
+                </div>
+
+                <!-- Factor 4 -->
+                <div class="factor-item mt-2.5">
+                  <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                    <span class="text-slate-800">
+                      Accessibility Deficit <span class="badge bg-light text-secondary border fs-8">Weight: 15%</span>
+                    </span>
+                    <span class="text-slate-900">88.0 raw &bull; <strong class="text-info">+13.2 pts</strong></span>
+                  </div>
+                  <div class="progress" style="height: 7px;">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: 88%;"></div>
+                  </div>
+                  <div class="text-slate-500 fs-9 mt-0.5">Source: Spatial Travel Time Network Model</div>
+                </div>
+
+                <!-- Factor 5 -->
+                <div class="factor-item mt-2.5">
+                  <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                    <span class="text-slate-800">
+                      Urgency Signal <span class="badge bg-light text-secondary border fs-8">Weight: 10%</span>
+                    </span>
+                    <span class="text-slate-900">82.0 raw &bull; <strong class="text-purple">+8.2 pts</strong></span>
+                  </div>
+                  <div class="progress" style="height: 7px;">
+                    <div class="progress-bar bg-purple" role="progressbar" style="width: 82%;"></div>
+                  </div>
+                  <div class="text-slate-500 fs-9 mt-0.5">Source: Keyword & Intent Emergency Classifier</div>
+                </div>
+
+                <!-- Factor 6 -->
+                <div class="factor-item mt-2.5">
+                  <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                    <span class="text-slate-800">
+                      Investment Mismatch <span class="badge bg-light text-secondary border fs-8">Weight: 5%</span>
+                    </span>
+                    <span class="text-slate-900">74.0 raw &bull; <strong class="text-dark">+3.7 pts</strong></span>
+                  </div>
+                  <div class="progress" style="height: 7px;">
+                    <div class="progress-bar bg-dark" role="progressbar" style="width: 74%;"></div>
+                  </div>
+                  <div class="text-slate-500 fs-9 mt-0.5">Source: State Capex Allocation Ledger vs. Demand Ratio</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Regional Hotspots Table & Interactive Priority Simulator Row -->
+    <div class="row g-4 mb-4">
+      <!-- Left: Regional Hotspots Table -->
+      <div class="col-lg-7" id="hotspots-section">
+        <div class="card border-0 shadow-sm rounded-3 h-100">
+          <div class="card-header bg-white border-bottom border-slate-200 py-3 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-slate-900 fs-6 d-flex align-items-center gap-2">
+              <i class="bi bi-geo-alt-fill text-danger"></i>
+              Ranked Regional Hotspots
+            </h5>
+            <span class="badge bg-slate-100 text-slate-700 border border-slate-200 fs-8">
+              5 Districts Evaluated
+            </span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 text-nowrap">
+                <thead class="table-light fs-8 text-uppercase tracking-wider text-secondary">
+                  <tr>
+                    <th class="ps-4">Rank & Region</th>
+                    <th>Sector Gap</th>
+                    <th>Gap Index</th>
+                    <th>Priority</th>
+                    <th>Citizen Demand</th>
+                    <th class="text-end pe-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="fs-7" id="hotspotsTableBody">
+                  <!-- Sample row 1 -->
+                  <tr>
+                    <td class="ps-4">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-danger text-white rounded-circle p-1.5 fs-8">#1</span>
+                        <div>
+                          <div class="fw-bold text-slate-900">Sitapur District</div>
+                          <div class="text-secondary fs-8">Uttar Pradesh</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">Healthcare</span></td>
+                    <td><strong class="text-danger">91.2 %</strong></td>
+                    <td><span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-bold">89.4 / 100</span></td>
+                    <td>2,840 requests</td>
+                    <td class="text-end pe-4">
+                      <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fs-8 fw-semibold" onclick="selectHotspot(0)">
+                        Details
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Sample row 2 -->
+                  <tr>
+                    <td class="ps-4">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-warning-subtle text-warning-emphasis rounded-circle p-1.5 fs-8">#2</span>
+                        <div>
+                          <div class="fw-bold text-slate-900">Koraput District</div>
+                          <div class="text-secondary fs-8">Odisha</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge bg-info-subtle text-info border border-info-subtle">Drinking Water</span></td>
+                    <td><strong class="text-warning-emphasis">84.6 %</strong></td>
+                    <td><span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-bold">82.1 / 100</span></td>
+                    <td>1,950 requests</td>
+                    <td class="text-end pe-4">
+                      <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fs-8 fw-semibold" onclick="selectHotspot(1)">
+                        Details
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Sample row 3 -->
+                  <tr>
+                    <td class="ps-4">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary-subtle text-secondary rounded-circle p-1.5 fs-8">#3</span>
+                        <div>
+                          <div class="fw-bold text-slate-900">Barmer District</div>
+                          <div class="text-secondary fs-8">Rajasthan</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Solar Microgrids</span></td>
+                    <td><strong class="text-secondary">78.4 %</strong></td>
+                    <td><span class="badge bg-secondary-subtle text-dark border border-secondary-subtle fw-bold">76.5 / 100</span></td>
+                    <td>1,420 requests</td>
+                    <td class="text-end pe-4">
+                      <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fs-8 fw-semibold" onclick="selectHotspot(2)">
+                        Details
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Sample row 4 -->
+                  <tr>
+                    <td class="ps-4">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary-subtle text-secondary rounded-circle p-1.5 fs-8">#4</span>
+                        <div>
+                          <div class="fw-bold text-slate-900">Purnia District</div>
+                          <div class="text-secondary fs-8">Bihar</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge bg-dark-subtle text-dark border border-dark-subtle">Rural Roads</span></td>
+                    <td><strong class="text-secondary">75.0 %</strong></td>
+                    <td><span class="badge bg-secondary-subtle text-dark border border-secondary-subtle fw-bold">73.8 / 100</span></td>
+                    <td>1,280 requests</td>
+                    <td class="text-end pe-4">
+                      <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fs-8 fw-semibold" onclick="selectHotspot(3)">
+                        Details
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Sample row 5 -->
+                  <tr>
+                    <td class="ps-4">
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary-subtle text-secondary rounded-circle p-1.5 fs-8">#5</span>
+                        <div>
+                          <div class="fw-bold text-slate-900">Wayanad District</div>
+                          <div class="text-secondary fs-8">Kerala</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">Resilient Bridges</span></td>
+                    <td><strong class="text-secondary">71.2 %</strong></td>
+                    <td><span class="badge bg-secondary-subtle text-dark border border-secondary-subtle fw-bold">70.4 / 100</span></td>
+                    <td>931 requests</td>
+                    <td class="text-end pe-4">
+                      <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fs-8 fw-semibold" onclick="selectHotspot(4)">
+                        Details
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Interactive Priority Simulator Tool -->
+      <div class="col-lg-5" id="simulator-section">
+        <div class="card border-0 shadow-sm rounded-3 h-100">
+          <div class="card-header bg-white border-bottom border-slate-200 py-3 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-slate-900 fs-6 d-flex align-items-center gap-2">
+              <i class="bi bi-sliders text-success"></i>
+              Live Priority Simulator
+            </h5>
+            <span class="badge bg-success-subtle text-success border border-success-subtle fs-8">
+              Interactive Engine
+            </span>
+          </div>
+
+          <div class="card-body p-4">
+            <p class="text-secondary fs-8 mb-3">
+              Adjust input parameters below. The Flask backend calculates the audited priority score in real-time.
+            </p>
+
+            <!-- Sliders Form -->
+            <form id="simulatorForm" class="space-y-3">
+              <!-- Slider 1: Demand -->
+              <div>
+                <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                  <label for="simDemand" class="form-label mb-0 text-slate-800">Citizen Demand Signal (30%)</label>
+                  <span class="text-primary fw-bold" id="valDemand">94</span>
+                </div>
+                <input type="range" class="form-range" min="0" max="100" value="94" id="simDemand">
+              </div>
+
+              <!-- Slider 2: Gap -->
+              <div class="mt-2">
+                <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                  <label for="simGap" class="form-label mb-0 text-slate-800">Infrastructure Gap (25%)</label>
+                  <span class="text-danger fw-bold" id="valGap">91</span>
+                </div>
+                <input type="range" class="form-range" min="0" max="100" value="91" id="simGap">
+              </div>
+
+              <!-- Slider 3: Vulnerability -->
+              <div class="mt-2">
+                <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                  <label for="simVuln" class="form-label mb-0 text-slate-800">Population Vulnerability (15%)</label>
+                  <span class="text-warning-emphasis fw-bold" id="valVuln">86</span>
+                </div>
+                <input type="range" class="form-range" min="0" max="100" value="86" id="simVuln">
+              </div>
+
+              <!-- Slider 4: Accessibility -->
+              <div class="mt-2">
+                <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                  <label for="simAcc" class="form-label mb-0 text-slate-800">Accessibility Deficit (15%)</label>
+                  <span class="text-info fw-bold" id="valAcc">88</span>
+                </div>
+                <input type="range" class="form-range" min="0" max="100" value="88" id="simAcc">
+              </div>
+
+              <!-- Slider 5: Urgency -->
+              <div class="mt-2">
+                <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                  <label for="simUrg" class="form-label mb-0 text-slate-800">Urgency Signal (10%)</label>
+                  <span class="text-purple fw-bold" id="valUrg">82</span>
+                </div>
+                <input type="range" class="form-range" min="0" max="100" value="82" id="simUrg">
+              </div>
+
+              <!-- Slider 6: Investment Mismatch -->
+              <div class="mt-2">
+                <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                  <label for="simInv" class="form-label mb-0 text-slate-800">Investment Mismatch (5%)</label>
+                  <span class="text-dark fw-bold" id="valInv">74</span>
+                </div>
+                <input type="range" class="form-range" min="0" max="100" value="74" id="simInv">
+              </div>
+
+              <!-- Simulator Result Box -->
+              <div class="bg-slate-100 rounded-3 p-3 mt-3 border border-slate-200 text-center">
+                <div class="text-secondary fs-8 fw-semibold text-uppercase tracking-wider">Simulated Priority Score</div>
+                <div class="display-6 fw-black text-slate-900 mt-1" id="simResultScore">89.4</div>
+                <div class="text-slate-500 fs-8 mt-1" id="simResultTier">
+                  <span class="badge bg-danger rounded-pill px-2.5 py-1">Critical Priority Tier</span>
+                </div>
+              </div>
+
+              <!-- Simulator Buttons -->
+              <div class="d-flex gap-2 pt-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill w-50 fw-semibold" id="btnResetSim">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Default
+                </button>
+                <button type="button" class="btn btn-dark btn-sm rounded-pill w-50 fw-semibold" id="btnApplySim">
+                  <i class="bi bi-check-lg me-1"></i> Compute Score
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- National Intelligence Workflow Stages -->
+    <section class="card border-0 shadow-sm rounded-3 mb-4">
+      <div class="card-body p-4">
+        <h6 class="text-slate-500 text-uppercase fw-bold fs-8 tracking-wider mb-3">
+          National Decision Pipeline Stages
+        </h6>
+
+        <div class="row g-2 text-center" id="pipelineContainer">
+          <div class="col-6 col-md-3 col-lg">
+            <div class="p-2.5 bg-slate-100 rounded-3 border border-slate-200 h-100 d-flex flex-column justify-content-center">
+              <span class="badge bg-slate-900 text-white fs-9 rounded-pill mb-1 w-auto mx-auto px-2">STAGE 01</span>
+              <span class="fw-bold text-slate-800 fs-8">Citizen Voice</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 col-lg">
+            <div class="p-2.5 bg-slate-100 rounded-3 border border-slate-200 h-100 d-flex flex-column justify-content-center">
+              <span class="badge bg-slate-900 text-white fs-9 rounded-pill mb-1 w-auto mx-auto px-2">STAGE 02</span>
+              <span class="fw-bold text-slate-800 fs-8">Extract & Structure</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 col-lg">
+            <div class="p-2.5 bg-slate-100 rounded-3 border border-slate-200 h-100 d-flex flex-column justify-content-center">
+              <span class="badge bg-slate-900 text-white fs-9 rounded-pill mb-1 w-auto mx-auto px-2">STAGE 03</span>
+              <span class="fw-bold text-slate-800 fs-8">Demand Cluster</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 col-lg">
+            <div class="p-2.5 bg-slate-100 rounded-3 border border-slate-200 h-100 d-flex flex-column justify-content-center">
+              <span class="badge bg-slate-900 text-white fs-9 rounded-pill mb-1 w-auto mx-auto px-2">STAGE 04</span>
+              <span class="fw-bold text-slate-800 fs-8">Map Hotspot</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 col-lg">
+            <div class="p-2.5 bg-slate-100 rounded-3 border border-slate-200 h-100 d-flex flex-column justify-content-center">
+              <span class="badge bg-slate-900 text-white fs-9 rounded-pill mb-1 w-auto mx-auto px-2">STAGE 05</span>
+              <span class="fw-bold text-slate-800 fs-8">Infra Gap</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 col-lg">
+            <div class="p-2.5 bg-slate-100 rounded-3 border border-slate-200 h-100 d-flex flex-column justify-content-center">
+              <span class="badge bg-slate-900 text-white fs-9 rounded-pill mb-1 w-auto mx-auto px-2">STAGE 06</span>
+              <span class="fw-bold text-slate-800 fs-8">Priority Score</span>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 col-lg">
+            <div class="p-2.5 bg-slate-100 rounded-3 border border-slate-200 h-100 d-flex flex-column justify-content-center">
+              <span class="badge bg-slate-900 text-white fs-9 rounded-pill mb-1 w-auto mx-auto px-2">STAGE 07</span>
+              <span class="fw-bold text-slate-800 fs-8">Evidence & Action</span>
+            </div>
+          </div>
+        </div>
+    <!-- Public Grievance Feed & Decision Intake Section -->
+    <section class="card border-0 shadow-sm rounded-3 mb-4" id="grievances-section">
+      <div class="card-header bg-white border-bottom border-slate-200 py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <h5 class="mb-0 fw-bold text-slate-900 fs-6 d-flex align-items-center gap-2">
+            <i class="bi bi-megaphone-fill text-warning"></i>
+            Public Grievance Ledger & Decision Intake (जन सेवा संकेत)
+          </h5>
+          <span class="text-secondary fs-8">Direct citizen feedback converted into infrastructure demand signals</span>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <!-- Quick Tracking Search -->
+          <div class="input-group input-group-sm" style="max-width: 280px;">
+            <input type="text" class="form-control rounded-start-pill text-uppercase fs-8" id="txtTrackInput" placeholder="Enter Tracking ID (e.g. JAN-2026-UP-84219)">
+            <button class="btn btn-outline-dark rounded-end-pill px-3 fs-8 fw-semibold" type="button" id="btnTrackLookup">
+              <i class="bi bi-search"></i> Track
+            </button>
+          </div>
+
+          <!-- File Grievance Modal Trigger -->
+          <button class="btn btn-warning btn-sm rounded-pill px-3 py-1.5 fw-bold text-dark d-inline-flex align-items-center gap-1.5 shadow-sm" data-bs-toggle="modal" data-bs-target="#citizenGrievanceModal">
+            <i class="bi bi-plus-circle-fill"></i> File New Grievance
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <!-- Tracking Alert Box (hidden by default) -->
+        <div id="trackResultBox" class="p-3 bg-light border-bottom border-slate-200 d-none">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+              <div>
+                <strong class="text-slate-900 fs-7" id="trackResultTitle">Tracking Result</strong>
+                <p class="text-secondary fs-8 mb-0" id="trackResultDetails"></p>
+              </div>
+            </div>
+            <button type="button" class="btn-close btn-sm" onclick="document.getElementById('trackResultBox').classList.add('d-none')"></button>
+          </div>
+        </div>
+
+        <!-- Table of Grievances -->
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 text-nowrap">
+            <thead class="table-light fs-8 text-uppercase tracking-wider text-secondary">
+              <tr>
+                <th class="ps-4">Tracking ID</th>
+                <th>Citizen Name</th>
+                <th>State & District</th>
+                <th>Infrastructure Category</th>
+                <th>Urgency</th>
+                <th>Grievance Summary</th>
+                <th>Status</th>
+                <th class="text-end pe-4">Submitted</th>
+              </tr>
+            </thead>
+            <tbody class="fs-7" id="grievancesTableBody">
+              <!-- Dynamically populated from Flask backend -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- Footer -->
+  <footer class="bg-white border-top border-slate-200 py-3 text-center text-secondary fs-8">
+    <div class="container-fluid">
+      JANVISTA AI • Jan-AI National Vision & Infrastructure Strategic Targeting Assistant • Government of India Decision Support System
+    </div>
+  </footer>
+
+  <!-- Modal 1: In-Principle Approval Modal -->
+  <div class="modal fade" id="actionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-3">
+        <div class="modal-header border-bottom border-slate-200 pb-3">
+          <h5 class="modal-title fw-bold text-slate-900 fs-6">
+            <i class="bi bi-shield-check text-primary me-1.5"></i>
+            Confirm In-Principle Recommendation Approval
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-4">
+          <p class="fs-7 text-secondary">
+            You are logging an official administrative endorsement as <strong>Policymaker (National)</strong> for:
+          </p>
+          <div class="bg-slate-50 border border-slate-200 rounded-3 p-3">
+            <div class="fw-bold text-slate-900 fs-7">Sitapur 100-Bed Sub-Divisional Hospital & Trauma Unit</div>
+            <div class="text-secondary fs-8 mt-1">Estimated Capex: ₹42.5 Cr &bull; Beneficiaries: 420,000 citizens</div>
+          </div>
+          <div class="form-check mt-3 fs-8">
+            <input class="form-check-input" type="checkbox" id="chkAudit" checked>
+            <label class="form-check-label text-secondary" for="chkAudit">
+              Append entry to tamper-evident decision audit ledger.
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer border-top border-slate-200 pt-3">
+          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold" id="btnConfirmApproval" data-bs-dismiss="modal">
+            Confirm & Log Approval
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Evidence & Provenance Modal -->
+  <div class="modal fade" id="evidenceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg rounded-3">
+        <div class="modal-header border-bottom border-slate-200 pb-3">
+          <h5 class="modal-title fw-bold text-slate-900 fs-6">
+            <i class="bi bi-journal-text text-primary me-1.5"></i>
+            Full Provenance & Evidence Chain
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-3">
+          <div class="list-group list-group-flush fs-7">
+            <div class="list-group-item px-0 py-2.5">
+              <div class="d-flex justify-content-between">
+                <strong class="text-slate-900">Citizen Demand Sample</strong>
+                <span class="badge bg-light text-secondary border">2,840 Records</span>
+              </div>
+              <p class="text-secondary fs-8 mb-0 mt-1">
+                "Hamare yahan koi emergency trauma care nahi hai. Lucknow le jaate jaate mareez dam tod deta hai."
+              </p>
+            </div>
+            <div class="list-group-item px-0 py-2.5">
+              <div class="d-flex justify-content-between">
+                <strong class="text-slate-900">National Health Mission Facility Audit (2024)</strong>
+                <span class="badge bg-success-subtle text-success border">Verified</span>
+              </div>
+              <p class="text-secondary fs-8 mb-0 mt-1">
+                Sitapur CHC bed ratio: 0.28 beds per 1,000 population (National benchmark is 1.0 bed per 1,000).
+              </p>
+            </div>
+            <div class="list-group-item px-0 py-2.5">
+              <div class="d-flex justify-content-between">
+                <strong class="text-slate-900">Spatial Transit Assessment</strong>
+                <span class="badge bg-info-subtle text-info border">GIS Model</span>
+              </div>
+              <p class="text-secondary fs-8 mb-0 mt-1">
+                Average travel time to nearest functional ICU/Trauma center during monsoon: 94 minutes.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top border-slate-200 pt-3">
+          <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Export Brief Modal -->
+  <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-3">
+        <div class="modal-header border-bottom border-slate-200 pb-3">
+          <h5 class="modal-title fw-bold text-slate-900 fs-6">
+            <i class="bi bi-file-earmark-pdf text-danger me-1.5"></i>
+            Export National Priority Brief
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-3 fs-7">
+          <p class="text-secondary mb-3">Choose format to export national infrastructure decision report:</p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-dark text-start p-2.5 rounded-3 d-flex align-items-center justify-content-between" onclick="alert('Exporting PDF Executive Summary (Simulated)...')">
+              <span><i class="bi bi-file-pdf-fill text-danger me-2"></i> PDF Executive Briefing (A4)</span>
+              <i class="bi bi-chevron-right text-secondary"></i>
+            </button>
+            <button class="btn btn-outline-dark text-start p-2.5 rounded-3 d-flex align-items-center justify-content-between" onclick="alert('Exporting CSV Ledger (Simulated)...')">
+              <span><i class="bi bi-file-earmark-spreadsheet-fill text-success me-2"></i> CSV Regional Ledger</span>
+              <i class="bi bi-chevron-right text-secondary"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Citizen Grievance Submission Modal (जन सेवा पोर्टल) -->
+  <div class="modal fade" id="citizenGrievanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg rounded-3">
+        <div class="modal-header bg-slate-900 text-white border-bottom border-slate-800 pb-3">
+          <div>
+            <h5 class="modal-title fw-bold fs-6 d-flex align-items-center gap-2">
+              <i class="bi bi-megaphone-fill text-warning"></i>
+              जन सेवा पोर्टल • File Citizen Grievance
+            </h5>
+            <span class="text-slate-400 fs-8">Direct public infrastructure signal intake — Government of India</span>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- Submission Form -->
+          <form id="grievanceForm">
+            <div class="row g-3">
+              <!-- Name -->
+              <div class="col-md-6">
+                <label for="citizenName" class="form-label fs-8 fw-bold text-slate-800">
+                  Full Name (पूरा नाम) <span class="text-danger">*</span>
+                </label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                  <input type="text" class="form-control" id="citizenName" placeholder="e.g. Ramesh Kumar" required>
+                </div>
+              </div>
+
+              <!-- Phone -->
+              <div class="col-md-6">
+                <label for="citizenPhone" class="form-label fs-8 fw-bold text-slate-800">
+                  Mobile Number (मोबाइल नंबर) <span class="text-secondary fw-normal fs-9">(Optional)</span>
+                </label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                  <input type="tel" class="form-control" id="citizenPhone" placeholder="e.g. +91 98765 43210">
+                </div>
+              </div>
+
+              <!-- State -->
+              <div class="col-md-6">
+                <label for="citizenState" class="form-label fs-8 fw-bold text-slate-800">
+                  State / UT (राज्य) <span class="text-danger">*</span>
+                </label>
+                <select class="form-select form-select-sm" id="citizenState" required>
+                  <option value="" selected disabled>-- Select Your State --</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Odisha">Odisha</option>
+                  <option value="Rajasthan">Rajasthan</option>
+                  <option value="Bihar">Bihar</option>
+                  <option value="Kerala">Kerala</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Andhra Pradesh">Andhra Pradesh</option>
+                  <option value="West Bengal">West Bengal</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Assam">Assam</option>
+                  <option value="Jharkhand">Jharkhand</option>
+                </select>
+              </div>
+
+              <!-- District / Village -->
+              <div class="col-md-6">
+                <label for="citizenDistrict" class="form-label fs-8 fw-bold text-slate-800">
+                  District & Village (जिला और गांव) <span class="text-danger">*</span>
+                </label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
+                  <input type="text" class="form-control" id="citizenDistrict" placeholder="e.g. Sitapur / Rampur Kalan" required>
+                </div>
+              </div>
+
+              <!-- Category -->
+              <div class="col-md-6">
+                <label for="citizenCategory" class="form-label fs-8 fw-bold text-slate-800">
+                  Infrastructure Category (श्रेणी) <span class="text-danger">*</span>
+                </label>
+                <select class="form-select form-select-sm" id="citizenCategory" required>
+                  <option value="Healthcare">Healthcare (Hospital, PHC, CHC, Ambulance)</option>
+                  <option value="Drinking Water">Drinking Water (Pipes, Filtration, Handpumps)</option>
+                  <option value="Roads & Bridges">Roads & Bridges (All-Weather Roads, Culverts)</option>
+                  <option value="Electricity & Solar">Electricity & Solar (Grid, Outages, Transformers)</option>
+                  <option value="Education & Schools">Education & Schools (Classrooms, Toilets)</option>
+                  <option value="Sanitation & Waste">Sanitation & Drainage (Sewage, Drains)</option>
+                </select>
+              </div>
+
+              <!-- Urgency -->
+              <div class="col-md-6">
+                <label for="citizenUrgency" class="form-label fs-8 fw-bold text-slate-800">
+                  Urgency Level (प्राथमिकता) <span class="text-danger">*</span>
+                </label>
+                <select class="form-select form-select-sm" id="citizenUrgency" required>
+                  <option value="MODERATE">Moderate / Standard Priority</option>
+                  <option value="HIGH">High Priority (Affecting whole village/ward)</option>
+                  <option value="CRITICAL">Critical Emergency (Life safety / Immediate threat)</option>
+                </select>
+              </div>
+
+              <!-- Description -->
+              <div class="col-12">
+                <label for="citizenDescription" class="form-label fs-8 fw-bold text-slate-800">
+                  Grievance Details (शिकायत का विवरण) <span class="text-danger">*</span>
+                </label>
+                <textarea class="form-control fs-7" id="citizenDescription" rows="3" placeholder="Explain the problem clearly (e.g., Road is broken for 6 months, no doctors at CHC, tap water is polluted...)" required></textarea>
+                <div class="form-text fs-9 text-slate-500">You can write in English, Hindi, or your native language.</div>
+              </div>
+
+              <!-- Feedback / Success Container inside Modal -->
+              <div class="col-12 d-none" id="modalGrievanceSuccess">
+                <div class="alert alert-success border-0 rounded-3 p-3">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+                    <strong class="text-slate-900 fs-7">Grievance Registered Successfully!</strong>
+                  </div>
+                  <p class="fs-8 text-secondary mb-2">
+                    Your request has been ingested as a verified citizen demand signal. Save your official Tracking ID:
+                  </p>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-slate-900 text-white fs-6 px-3 py-1.5 rounded-pill fw-mono" id="lblCreatedTrackingId">
+                      JAN-2026-UP-XXXXX
+                    </span>
+                    <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-2.5 py-0.5 fs-8" id="btnCopyTrackingId">
+                      <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-2 border-top border-slate-200 d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-warning text-dark fw-bold btn-sm rounded-pill px-4 shadow-sm" id="btnSubmitGrievance">
+                <i class="bi bi-send-fill me-1"></i> Submit Grievance
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast align-items-center text-bg-dark border-0 rounded-3 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body fs-7" id="toastMessage">
+          Action completed successfully!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5.3.3 Bundle JS with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  
+  <!-- Dashboard Interactivity Script -->
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
