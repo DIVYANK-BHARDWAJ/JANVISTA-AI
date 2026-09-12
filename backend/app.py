@@ -13,6 +13,7 @@ from data import (
     PIPELINE_STAGES,
     add_citizen_grievance,
     get_citizen_grievances,
+    update_citizen_grievance_status,
 )
 from priority_engine import calculate_priority_score
 
@@ -217,9 +218,9 @@ def dynamic_priority_calculation():
 @app.route("/api/citizen/grievance", methods=["POST"])
 def submit_grievance():
     """
-    Public Citizen Grievance Submission Endpoint.
-    Accepts: name, state, district, category, description, phone, urgency.
-    Returns: generated tracking_id and created grievance record.
+    Public Citizen Grievance Submission Endpoint (Role: Citizen).
+    Accepts: name, state, district, village_or_ward, category, description, phone, urgency.
+    Returns: generated tracking_id and created grievance record with complete audit trail.
     Zero external API key required.
     """
     body = request.get_json(silent=True) or request.form or {}
@@ -227,6 +228,7 @@ def submit_grievance():
     name = body.get("name", "").strip()
     state = body.get("state", "").strip()
     district = body.get("district", "").strip()
+    village_or_ward = body.get("village_or_ward", "").strip()
     category = body.get("category", "General Infrastructure").strip()
     description = body.get("description", "").strip()
     phone = body.get("phone", "").strip()
@@ -237,7 +239,7 @@ def submit_grievance():
     if not state:
         return jsonify({"success": False, "error": "State is required."}), 400
     if not district:
-        return jsonify({"success": False, "error": "District / Village is required."}), 400
+        return jsonify({"success": False, "error": "District is required."}), 400
     if not description:
         return jsonify({"success": False, "error": "Grievance details are required."}), 400
 
@@ -248,12 +250,13 @@ def submit_grievance():
         category=category,
         description=description,
         phone=phone,
+        village_or_ward=village_or_ward,
         urgency=urgency,
     )
 
     return jsonify({
         "success": True,
-        "message": "Grievance submitted successfully to National Decision Intelligence Intake.",
+        "message": "Grievance submitted successfully into National Decision Intelligence Intake.",
         "tracking_id": new_record["tracking_id"],
         "data": new_record,
     }), 201
@@ -262,13 +265,123 @@ def submit_grievance():
 @app.route("/api/citizen/grievances", methods=["GET"])
 def list_grievances():
     """
-    Returns list of all submitted citizen grievances.
+    Returns list of citizen grievances.
+    PRIVACY PROTECTION: Citizens cannot view grievances of other citizens.
+    If role=citizen is provided, only grievances matching the citizen's own tracking_ids are returned.
+    District Collectors and Policy Makers can access complete filtered oversight.
     """
-    grievances = get_citizen_grievances()
+    role = (request.args.get("role") or "").strip().lower()
+    tracking_ids_param = request.args.get("tracking_ids")
+
+    district = request.args.get("district")
+    state = request.args.get("state")
+    category = request.args.get("category")
+    urgency = request.args.get("urgency")
+    status = request.args.get("status")
+
+    # Privacy enforcement for Citizen Role
+    if role == "citizen":
+        if not tracking_ids_param:
+            return jsonify({
+                "success": True,
+                "count": 0,
+                "privacy_restricted": True,
+                "message": "Citizen privacy active: You can only view your own submitted grievances. Use your Tracking ID to track status.",
+                "data": [],
+            })
+
+        allowed_ids = [t.strip().upper() for t in tracking_ids_param.split(",") if t.strip()]
+        all_grievances = get_citizen_grievances()
+        user_grievances = [g for g in all_grievances if g.get("tracking_id", "").upper() in allowed_ids]
+
+        return jsonify({
+            "success": True,
+            "count": len(user_grievances),
+            "privacy_restricted": True,
+            "message": "Displaying only your submitted grievances.",
+            "data": user_grievances,
+        })
+
+    # Government Officials (District Collector, Policymaker, State Planner)
+    grievances = get_citizen_grievances(
+        district=district,
+        state=state,
+        category=category,
+        urgency=urgency,
+        status=status,
+    )
+
     return jsonify({
         "success": True,
         "count": len(grievances),
+        "privacy_restricted": False,
+        "filters_applied": {
+            "district": district,
+            "state": state,
+            "category": category,
+            "urgency": urgency,
+            "status": status,
+        },
         "data": grievances,
+    })
+
+
+@app.route("/api/citizen/grievance/<tracking_id>", methods=["GET"])
+def get_grievance_detail(tracking_id):
+    """
+    Complete Citizen Grievance Inspection Endpoint.
+    Returns complete grievance details including full narrative, citizen profile,
+    assigned department, official remarks history, and status.
+    Used by District Collectors and Policymakers.
+    """
+    tracking_id_clean = tracking_id.strip().upper()
+    grievances = get_citizen_grievances()
+    record = next((g for g in grievances if g["tracking_id"].upper() == tracking_id_clean), None)
+
+    if not record:
+        return jsonify({
+            "success": False,
+            "error": f"No grievance found with Tracking ID: {tracking_id}"
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "data": record,
+    })
+
+
+@app.route("/api/citizen/grievance/<tracking_id>/status", methods=["POST", "PATCH"])
+def update_grievance_status_endpoint(tracking_id):
+    """
+    Official Administrative Action Endpoint.
+    Allows District Collectors and Policymakers to update grievance status
+    and log official administrative remarks.
+    """
+    body = request.get_json(silent=True) or request.form or {}
+    new_status = body.get("status", "").strip()
+    remark = body.get("remark", "").strip()
+    officer = body.get("officer", "District Collector").strip()
+
+    if not new_status:
+        return jsonify({"success": False, "error": "New status is required."}), 400
+
+    updated_record = update_citizen_grievance_status(
+        tracking_id=tracking_id,
+        new_status=new_status,
+        remark=remark,
+        officer=officer,
+    )
+
+    if not updated_record:
+        return jsonify({
+            "success": False,
+            "error": f"Grievance with Tracking ID '{tracking_id}' not found."
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "message": f"Status updated to '{new_status}' successfully by {officer}.",
+        "data": updated_record,
     })
 
 
