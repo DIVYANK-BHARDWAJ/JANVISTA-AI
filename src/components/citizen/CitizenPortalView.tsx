@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CitizenRequest, InfrastructureCategory, UrgencyLevel } from "@/types";
+import { CitizenRequest } from "@/types";
 import { dataStore } from "@/lib/data/store";
 import { VoiceRecorder } from "./VoiceRecorder";
 import { TextInput } from "./TextInput";
@@ -9,16 +9,10 @@ import {
   Mic,
   FileText,
   Camera,
-  MapPin,
   CheckCircle2,
   Search,
-  Sparkles,
-  ShieldCheck,
   Upload,
   Globe,
-  Tag,
-  Clock,
-  ArrowRight,
   Info,
 } from "lucide-react";
 import { SUPPORTED_LANGUAGES } from "@/config/priority-weights";
@@ -52,7 +46,6 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
   const [trackingError, setTrackingError] = useState("");
 
   const regions = dataStore.getRegions();
-  const recentRequests = dataStore.getRequests();
 
   // Handle Photo / File Upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -383,25 +376,10 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
             )}
           </div>
 
-          {/* Recent Public Citizen Signals Feed */}
-          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
-              <Tag className="w-4 h-4 text-slate-800" />
-              <span>Recent Public Signals (India)</span>
-            </h3>
-
-            <div className="space-y-3">
-              {recentRequests.slice(0, 3).map((req) => (
-                <div key={req.id} className="bg-slate-50 border border-slate-200 p-3 rounded space-y-1 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-slate-900 text-[11px]">{req.locationName}</span>
-                    <CategoryBadge category={req.category} />
-                  </div>
-                  <p className="text-[11px] text-slate-700 line-clamp-2 italic">&quot;{req.normalizedText}&quot;</p>
-                  <span className="text-[10px] text-slate-500 block font-mono">{new Date(req.timestamp).toLocaleDateString()}</span>
-                </div>
-              ))}
-            </div>
+          {/* Privacy Notice */}
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-xs text-slate-600 space-y-1">
+            <p className="font-bold text-slate-800">🔒 Privacy Protected</p>
+            <p>Your grievance details are confidential. Only authorised government officials can view submitted grievances. Other citizens cannot see your submission.</p>
           </div>
         </div>
       </div>
