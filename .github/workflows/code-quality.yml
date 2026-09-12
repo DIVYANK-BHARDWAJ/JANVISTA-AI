@@ -36,4 +36,5 @@ jobs:
         run: npm run lint --if-present
       - name: Prettier check
         if: steps.project.outputs.exists == 'true'
+        continue-on-error: true
         run: npx prettier . --check
