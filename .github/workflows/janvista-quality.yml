@@ -1,0 +1,158 @@
+name: JANVISTA Quality Gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: janvista-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-sanity:
+    name: Repository Sanity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify expected project files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Checking JANVISTA repository structure..."
+
+          missing=0
+          for f in package.json README.md; do
+            if [[ ! -f "$f" ]]; then
+              echo "::warning file=$f::Expected file '$f' is not present yet."
+              missing=1
+            fi
+          done
+
+          if [[ ! -f package.json ]]; then
+            echo "The application source/package manifest is not present on this branch."
+            echo "CI will remain non-blocking at this stage so the repository can bootstrap safely."
+            exit 0
+          fi
+
+          if [[ ! -f package-lock.json && ! -f npm-shrinkwrap.json && ! -f yarn.lock ]]; then
+            echo "::error::No dependency lockfile found. Add package-lock.json, npm-shrinkwrap.json, or yarn.lock."
+            exit 1
+          fi
+
+  node-quality:
+    name: Node Build and Test
+    needs: repository-sanity
+    if: ${{ hashFiles('package.json') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Node version from package.json
+        id: node
+        shell: bash
+        run: |
+          node_version=$(node -e "const p=require('./package.json'); console.log(p.engines?.node || '20.x')")
+          echo "version=$node_version" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck --if-present
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Unit tests
+        run: npm test --if-present
+
+      - name: Build
+        run: npm run build --if-present
+
+  smoke-check:
+    name: Smoke Checks
+    needs: node-quality
+    if: ${{ hashFiles('package.json') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        shell: bash
+        run: |
+          set -euo pipefail
+          if npm run start --if-present > /tmp/janvista.log 2>&1 & then
+            echo $! > /tmp/janvista.pid
+          else
+            echo "No start script available; skipping runtime smoke test."
+            exit 0
+          fi
+
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000 >/dev/null 2>&1; then
+              echo "JANVISTA is responding on port 3000."
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "::error::JANVISTA did not become ready on port 3000."
+          cat /tmp/janvista.log || true
+          exit 1
+
+  failure-report:
+    name: Report Quality Failure
+    needs: [repository-sanity, node-quality, smoke-check]
+    if: ${{ failure() && github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Create or update CI failure issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="CI failure: JANVISTA quality gates ($GITHUB_SHA)"
+          body=$(cat <<EOF
+          ## JANVISTA CI detected a failure
+
+          **Commit:** $GITHUB_SHA  
+          **Workflow:** $GITHUB_WORKFLOW  
+          **Run:** https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          One or more automated quality gates failed. Open the workflow run for the exact failing step and logs.
+
+          This issue is intentionally generated for `push` runs so failures are visible without requiring manual log inspection.
+          EOF
+          )
+
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body" || true
