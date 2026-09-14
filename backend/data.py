@@ -265,7 +265,6 @@ CITIZEN_GRIEVANCES = [
         "village_or_ward": "Meppadi Panchayat, Chooralmala Ward",
         "category": "Roads & Bridges",
         "urgency": "CRITICAL",
-        "description": "Landslide prone hillside road has visible cracks after torrential rain. School bus route operates on this ridge with immense safety risk.",
         "status": "UNDER_REVIEW",
         "department": "Public Works Department (PWD Roads)",
         "timestamp": "2026-09-11 11:00",
@@ -277,24 +276,173 @@ CITIZEN_GRIEVANCES = [
             }
         ]
     },
+    {
+        "tracking_id": "JAN-2026-JH-84221",
+        "name": "Binod Kumar Mahato",
+        "phone": "+91 94311 23456",
+        "state": "Jharkhand",
+        "district": "Giridih",
+        "village_or_ward": "Tisri Block, Lokai Panchayat",
+        "category": "Healthcare",
+        "urgency": "CRITICAL",
+        "description": "Primary Health Centre in Tisri block lacks a functional ultrasound unit and emergency obstetrician. 12 emergency delivery transfers to Dhanbad faced complications due to broken ghat roads.",
+        "status": "UNDER_REVIEW",
+        "department": "District Health Society & Civil Surgeon Giridih",
+        "timestamp": "2026-09-12 14:30",
+        "official_remarks": [
+            {
+                "officer": "District Collector (Giridih)",
+                "date": "2026-09-12 15:10",
+                "remark": "Civil Surgeon instructed to deploy mobile ultrasound medical van and audit emergency transport fleet."
+            }
+        ]
+    },
+    {
+        "tracking_id": "JAN-2026-JH-84222",
+        "name": "Sunita Murmu",
+        "phone": "+91 98351 77890",
+        "state": "Jharkhand",
+        "district": "Giridih",
+        "village_or_ward": "Pirtand Block, Madhuban Ward 2",
+        "category": "Drinking Water",
+        "urgency": "HIGH",
+        "description": "Deep solar borewell water in 4 Santhal tribal tolas contaminated with high iron content and coal dust runoff. Over 60 children exhibiting skin rashes and gastrointestinal issues.",
+        "status": "FIELD_AUDIT_SCHEDULED",
+        "department": "Drinking Water and Sanitation Department (DWSD)",
+        "timestamp": "2026-09-12 09:20",
+        "official_remarks": [
+            {
+                "officer": "Executive Engineer (DWSD Giridih)",
+                "date": "2026-09-12 10:45",
+                "remark": "Technical team dispatched for Terafil water filtration installation; safe water tankers deployed."
+            }
+        ]
+    },
+    {
+        "tracking_id": "JAN-2026-JH-84223",
+        "name": "Arjun Soren",
+        "phone": "+91 97092 11223",
+        "state": "Jharkhand",
+        "district": "Ranchi",
+        "village_or_ward": "Kanke Block, Arsande Village",
+        "category": "Roads & Bridges",
+        "urgency": "HIGH",
+        "description": "Main rural link road submerged during sudden storm runoff. Over 2,800 farmers unable to reach agricultural produce market committee yard in Ranchi.",
+        "status": "UNDER_REVIEW",
+        "department": "Rural Works Department (RWD Jharkhand)",
+        "timestamp": "2026-09-11 16:00",
+        "official_remarks": [
+            {
+                "officer": "State Infrastructure Planner",
+                "date": "2026-09-12 08:30",
+                "remark": "Elevated box culvert proposal shortlisted for State Road Fund (SRF) priority allocation."
+            }
+        ]
+    },
+    {
+        "tracking_id": "JAN-2026-MH-84224",
+        "name": "Santosh Deshmukh",
+        "phone": "+91 98220 54321",
+        "state": "Maharashtra",
+        "district": "Pune",
+        "village_or_ward": "Shirur Tehsil, Shikrapur Industrial Fringe",
+        "category": "Drinking Water",
+        "urgency": "HIGH",
+        "description": "Industrial effluent infiltration into ground aquifer causing severe chemical contamination in drinking water wells serving 12,000 residents.",
+        "status": "FIELD_AUDIT_SCHEDULED",
+        "department": "Maharashtra Pollution Control Board & Zilla Parishad",
+        "timestamp": "2026-09-12 13:15",
+        "official_remarks": [
+            {
+                "officer": "District Collector (Pune)",
+                "date": "2026-09-12 14:00",
+                "remark": "Joint inspection team from MPCB and District Water Quality wing dispatched for sampling."
+            }
+        ]
+    },
+    {
+        "tracking_id": "JAN-2026-KA-84225",
+        "name": "Manjunath Gowda",
+        "phone": "+91 94480 33445",
+        "state": "Karnataka",
+        "district": "Bengaluru Urban",
+        "village_or_ward": "Anekal Taluk, Jigani Hobli",
+        "category": "Roads & Bridges",
+        "urgency": "MODERATE",
+        "description": "Heavy industrial freight has damaged connecting arterial road to national highway. Severe dust pollution and transit delay for school buses.",
+        "status": "ACTION_APPROVED",
+        "department": "Public Works Department (Karnataka)",
+        "timestamp": "2026-09-11 15:45",
+        "official_remarks": [
+            {
+                "officer": "State Infrastructure Planner",
+                "date": "2026-09-12 10:15",
+                "remark": "Rigid white-topping package sanctioned under Chief Minister Grama Sadak Yojana."
+            }
+        ]
+    },
+    {
+        "tracking_id": "JAN-2026-TN-84226",
+        "name": "K. Senthil Kumar",
+        "phone": "+91 98410 99887",
+        "state": "Tamil Nadu",
+        "district": "Chennai",
+        "village_or_ward": "Sholinganallur Zone, Semmancheri Ward 197",
+        "category": "Sanitation & Waste",
+        "urgency": "HIGH",
+        "description": "Stormwater drainage canal choked with silt and plastic debris leading to backwater inundation in residential colonies.",
+        "status": "FIELD_AUDIT_SCHEDULED",
+        "department": "Greater Chennai Corporation (GCC)",
+        "timestamp": "2026-09-12 08:30",
+        "official_remarks": [
+            {
+                "officer": "District Collector (Chennai)",
+                "date": "2026-09-12 09:15",
+                "remark": "GCC Zonal Officer directed to mobilize super-sucker machines and desilt canal within 72 hours."
+            }
+        ]
+    },
 ]
 
 STATE_CODES = {
-    "Uttar Pradesh": "UP",
-    "Odisha": "OR",
-    "Rajasthan": "RJ",
-    "Bihar": "BR",
-    "Kerala": "KL",
-    "Maharashtra": "MH",
-    "Madhya Pradesh": "MP",
-    "Tamil Nadu": "TN",
-    "Karnataka": "KA",
+    # States (28)
     "Andhra Pradesh": "AP",
-    "West Bengal": "WB",
-    "Punjab": "PB",
-    "Gujarat": "GJ",
+    "Arunachal Pradesh": "AR",
     "Assam": "AS",
+    "Bihar": "BR",
+    "Chhattisgarh": "CG",
+    "Goa": "GA",
+    "Gujarat": "GJ",
+    "Haryana": "HR",
+    "Himachal Pradesh": "HP",
     "Jharkhand": "JH",
+    "Karnataka": "KA",
+    "Kerala": "KL",
+    "Madhya Pradesh": "MP",
+    "Maharashtra": "MH",
+    "Manipur": "MN",
+    "Meghalaya": "ML",
+    "Mizoram": "MZ",
+    "Nagaland": "NL",
+    "Odisha": "OR",
+    "Punjab": "PB",
+    "Rajasthan": "RJ",
+    "Sikkim": "SK",
+    "Tamil Nadu": "TN",
+    "Telangana": "TG",
+    "Tripura": "TR",
+    "Uttar Pradesh": "UP",
+    "Uttarakhand": "UK",
+    "West Bengal": "WB",
+    # Union Territories (8)
+    "Andaman and Nicobar Islands": "AN",
+    "Chandigarh": "CH",
+    "Dadra and Nagar Haveli and Daman and Diu": "DN",
+    "Delhi": "DL",
+    "Jammu and Kashmir": "JK",
+    "Ladakh": "LA",
+    "Lakshadweep": "LD",
+    "Puducherry": "PY",
 }
 
 
@@ -305,6 +453,7 @@ def add_citizen_grievance(
     category: str,
     description: str,
     phone: str = "",
+    email: str = "",
     village_or_ward: str = "",
     urgency: str = "MODERATE"
 ):
@@ -324,6 +473,7 @@ def add_citizen_grievance(
         "tracking_id": tracking_id,
         "name": name.strip(),
         "phone": phone.strip() if phone else "Not provided",
+        "email": email.strip() if email else "Not provided",
         "state": state.strip(),
         "district": district.strip(),
         "village_or_ward": village_or_ward.strip() if village_or_ward else f"{district.strip()} Rural Area",
@@ -384,6 +534,187 @@ def update_citizen_grievance_status(
     return record
 
 
+def ensure_location_grievances(state: str = None, district: str = None):
+    """
+    Ensures that any queried state or district has realistic, high-impact grievances
+    ready for District Collectors and State Planners to inspect and act upon.
+
+    Resolves real districts from credentials.py – never defaults to out-of-state
+    placeholder districts (e.g. Sitapur for Karnataka). Previously mis-seeded records
+    (wrong district for a given state) are purged before re-seeding.
+    """
+    if not state and not district:
+        return
+
+    import random
+    from datetime import datetime
+    from credentials import get_collectors_by_state, STATE_PLANNER_CREDENTIALS
+
+    s_clean = (state or "").strip().lower()
+    d_clean = (district or "").strip().lower()
+
+    target_state = state.strip() if state else "Jharkhand"
+    state_code = STATE_CODES.get(target_state, "IN")
+
+    # ── 1. Resolve real districts for this state ─────────────────────────────
+    collectors_map = get_collectors_by_state(target_state)
+    real_district_names = sorted(set(v["district"] for v in collectors_map.values()))
+
+    # Fall back to a sensible placeholder only if credentials are missing
+    if not real_district_names:
+        # Try partial match (e.g. state name with different casing)
+        for sp_key, sp_val in STATE_PLANNER_CREDENTIALS.items():
+            if sp_val["state"].lower() == target_state.lower():
+                hq = sp_val.get("headquarters", target_state)
+                real_district_names = [hq]
+                break
+        if not real_district_names:
+            real_district_names = [f"{target_state.split()[0]} Central"]
+
+    # ── 2. Purge any grievances for this state whose district is NOT a real
+    #       district of that state (cross-contamination from old Sitapur default)
+    if real_district_names and s_clean:
+        real_lower = {d.lower() for d in real_district_names}
+        stale = [
+            g for g in CITIZEN_GRIEVANCES
+            if s_clean in g.get("state", "").lower()
+            and g.get("district", "").lower() not in real_lower
+        ]
+        for g in stale:
+            CITIZEN_GRIEVANCES.remove(g)
+
+    # ── 3. Determine which districts still need seeding ──────────────────────
+    #    If a specific district was requested, seed only that one.
+    #    If a state-level overview is requested, seed the top 3 districts.
+    if d_clean:
+        # Find the exact matching real district (case-insensitive)
+        matched = [d for d in real_district_names if d_clean in d.lower()]
+        districts_to_seed = matched[:1] if matched else [real_district_names[0]]
+    else:
+        # Seed top 3 real districts (evenly spread: first, middle, last)
+        n = len(real_district_names)
+        indices = sorted(set([0, n // 3, (2 * n) // 3, n - 1]))
+        districts_to_seed = [real_district_names[i] for i in indices][:3]
+
+    # ── 4. For each district, check if we already have ≥ 2 valid records ─────
+    category_templates = [
+        {
+            "category": "Healthcare",
+            "urgency": "CRITICAL",
+            "desc_fn": lambda d, s: (
+                f"Sub-Divisional Hospital in {d} lacks a 24/7 trauma emergency unit. "
+                f"Maternal and surgical emergencies face fatal delays – nearest tertiary "
+                f"facility is over 60 km away in {s} capital."
+            ),
+            "dept_fn": lambda d: f"District Health Society & CMO ({d})",
+            "remark_fn": lambda d: (
+                f"Flagged to District Collector ({d}). CMO directed to submit facility "
+                f"capacity audit and bed-strength enhancement proposal."
+            ),
+        },
+        {
+            "category": "Drinking Water",
+            "urgency": "HIGH",
+            "desc_fn": lambda d, s: (
+                f"Deep groundwater borewells across 6 rural panchayats in {d} show "
+                f"heavy fluoride & iron contamination. Villagers in {d} taluk travel "
+                f"over 3 km for potable water, especially in summer months."
+            ),
+            "dept_fn": lambda d: f"District Jal Jeevan Mission Office ({d})",
+            "remark_fn": lambda d: (
+                f"Referred to State Water Planning Board. Jal Jeevan Mission pipeline "
+                f"extension to {d} panchayats sanctioned under review."
+            ),
+        },
+        {
+            "category": "Roads & Bridges",
+            "urgency": "HIGH",
+            "desc_fn": lambda d, s: (
+                f"Key agricultural feeder road and culvert washed out by seasonal floods "
+                f"in {d}. Over 4,200 farmers in {d} sub-division are cut off from "
+                f"mandis and block headquarters."
+            ),
+            "dept_fn": lambda d: f"Rural Works & PMGSY Division ({d})",
+            "remark_fn": lambda d: (
+                f"District Magistrate ({d}) inspected site; emergency culvert repair "
+                f"under PMGSY-III forwarded to State Planner for fund sanction."
+            ),
+        },
+        {
+            "category": "Electricity & Solar",
+            "urgency": "MODERATE",
+            "desc_fn": lambda d, s: (
+                f"Unscheduled 10–14 hour daily outages in {d} agricultural belt are "
+                f"causing irrigation pump failures and crop loss. Farmers requesting "
+                f"decentralized solar feeder installation under PM-KUSUM."
+            ),
+            "dept_fn": lambda d: f"State DISCOM & Renewable Energy Agency ({d})",
+            "remark_fn": lambda d: (
+                f"State Infrastructure Planner allocated {d} as priority site for "
+                f"PM-KUSUM decentralized solar grid Phase-2 implementation."
+            ),
+        },
+        {
+            "category": "Sanitation & Waste",
+            "urgency": "MODERATE",
+            "desc_fn": lambda d, s: (
+                f"Solid waste management breakdown in {d} ward areas – garbage vehicles "
+                f"non-operational for 3 weeks. Stray animal menace and open burning "
+                f"are creating public health risks in residential zones."
+            ),
+            "dept_fn": lambda d: f"Urban Local Body / District Panchayat ({d})",
+            "remark_fn": lambda d: (
+                f"ULB chief directed to repair compactor vehicles and restore daily "
+                f"waste collection in {d} within 7 days. SWM plan to be submitted."
+            ),
+        },
+    ]
+
+    # ── 5. Seed missing records ───────────────────────────────────────────────
+    for target_district in districts_to_seed:
+        d_lower = target_district.lower()
+        existing_for_dist = [
+            g for g in CITIZEN_GRIEVANCES
+            if s_clean in g.get("state", "").lower()
+            and d_lower in g.get("district", "").lower()
+        ]
+        if len(existing_for_dist) >= 2:
+            continue  # Already seeded for this district
+
+        # Pick 3 random templates (varied per district)
+        random.seed(hash(target_district + target_state) % (2**31))
+        templates = random.sample(category_templates, k=min(3, len(category_templates)))
+
+        for t in templates:
+            r_num = random.randint(10000, 99999)
+            desc = t["desc_fn"](target_district, target_state)
+            dept = t["dept_fn"](target_district)
+            remark = t["remark_fn"](target_district)
+
+            rec = {
+                "tracking_id": f"JAN-2026-{state_code}-{r_num}",
+                "name": f"Local Resident, {target_district}",
+                "phone": f"+91 {random.randint(70000,99999)} {random.randint(10000,99999)}",
+                "state": target_state,
+                "district": target_district,
+                "village_or_ward": f"{target_district} Rural Panchayat Block",
+                "category": t["category"],
+                "urgency": t["urgency"],
+                "description": desc,
+                "status": "UNDER_REVIEW",
+                "department": dept,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "official_remarks": [
+                    {
+                        "officer": f"District Collector ({target_district})",
+                        "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        "remark": remark,
+                    }
+                ],
+            }
+            CITIZEN_GRIEVANCES.append(rec)
+
+
 def get_citizen_grievances(
     district: str = None,
     state: str = None,
@@ -393,7 +724,11 @@ def get_citizen_grievances(
 ):
     """
     Returns filtered list of citizen grievances based on official oversight criteria.
+    Guarantees rich records for any State or District requested.
     """
+    if state or district:
+        ensure_location_grievances(state=state, district=district)
+
     results = CITIZEN_GRIEVANCES
 
     if district and district.strip().lower() not in ["all", "all districts", ""]:
@@ -418,3 +753,159 @@ def get_citizen_grievances(
 
     return results
 
+
+def get_state_dashboard_data(state_name: str):
+    """
+    Generates tailored decision intelligence overview for State Planners of respective states.
+    Covers all 28 States and 8 Union Territories of India.
+    Includes state KPIs, Top Spotlight Priority Opportunity, and Ranked District Hotspots.
+    """
+    from credentials import get_collectors_by_state, STATE_PLANNER_CREDENTIALS
+
+    state_clean = (state_name or "").strip().lower()
+    matched_sp = None
+
+    for sp in STATE_PLANNER_CREDENTIALS.values():
+        if sp["state"].lower() == state_clean or sp["state_code"].lower() == state_clean:
+            matched_sp = sp
+            break
+
+    if not matched_sp:
+        for sp in STATE_PLANNER_CREDENTIALS.values():
+            if state_clean in sp["state"].lower():
+                matched_sp = sp
+                break
+
+    if not matched_sp:
+        matched_sp = list(STATE_PLANNER_CREDENTIALS.values())[0]
+
+    actual_state_name = matched_sp["state"]
+    state_code = matched_sp["state_code"]
+    hq = matched_sp.get("headquarters", "State Capital")
+
+    # Fetch districts for this respective state
+    collectors = get_collectors_by_state(actual_state_name)
+    district_names = [c["district"] for c in collectors.values()]
+    if not district_names:
+        district_names = [f"{actual_state_name} Central", f"{actual_state_name} North", f"{actual_state_name} South"]
+
+    total_districts = len(district_names)
+
+    # Deterministic categories & metrics for state hotspots
+    categories = ["Healthcare", "Drinking Water", "Roads & Bridges", "Solar Microgrids", "Sanitation & Drainage"]
+    gap_bases = [92.4, 86.8, 81.5, 76.2, 72.0]
+    score_bases = [89.6, 84.2, 79.8, 75.4, 71.2]
+    requests_bases = [2640, 1980, 1520, 1280, 940]
+
+    top_5_districts = district_names[:5] if len(district_names) >= 5 else (district_names * 5)[:5]
+    state_hotspots = []
+
+    for idx, d_name in enumerate(top_5_districts):
+        cat = categories[idx % len(categories)]
+        gap = round(gap_bases[idx] - (idx * 0.4), 1)
+        score = round(score_bases[idx] - (idx * 0.3), 1)
+        reqs = requests_bases[idx] + (len(d_name) * 15)
+        status = "CRITICAL" if idx == 0 else ("HIGH" if idx == 1 else "MODERATE")
+        urgency = "High" if idx < 2 else "Medium"
+        state_hotspots.append({
+            "rank": idx + 1,
+            "region_id": f"reg-{d_name.lower().replace(' ', '_')[:8]}-{state_code.lower()}",
+            "region_name": f"{d_name} District, {actual_state_name}",
+            "district": d_name,
+            "category": cat,
+            "gap_index": gap,
+            "priority_score": score,
+            "citizen_requests": reqs,
+            "status": status,
+            "urgency": urgency,
+        })
+
+    rank1 = state_hotspots[0]
+    rank1_dist = rank1["district"]
+
+    # Calculate deterministic spotlight priority MCA breakdown
+    spotlight_priority = calculate_priority_score(
+        demand=94.5,
+        gap=rank1["gap_index"],
+        vulnerability=86.0,
+        accessibility_deficit=88.5,
+        urgency=83.0,
+        investment_mismatch=75.0,
+    )
+
+    spotlight = {
+        "id": f"rec-{rank1_dist.lower().replace(' ', '_')[:8]}-{state_code.lower()}-01",
+        "region_id": rank1["region_id"],
+        "region_name": f"{rank1_dist} District, {actual_state_name}",
+        "district": rank1_dist,
+        "category": rank1["category"],
+        "title": f"Establish 100-Bed Sub-Divisional Hospital & Emergency Trauma Unit in {rank1_dist}",
+        "description": f"Critical infrastructure deficit in {rank1_dist} identified via {rank1['citizen_requests']:,} citizen demand signals. Nearest tertiary facilities are located over 65 km away at {hq}.",
+        "estimated_cost_cr": 44.2,
+        "impacted_population": 395000,
+        "urgency_tier": rank1["status"],
+        "status": "PROPOSED",
+        "priority_score": spotlight_priority["score"],
+        "priority_breakdown": spotlight_priority,
+        "key_metrics": {
+            "existing_chc_beds": 25,
+            "required_beds": 100,
+            "average_transit_time_mins": 90,
+            "target_transit_time_mins": 25,
+        }
+    }
+
+    total_reqs = sum(h["citizen_requests"] for h in state_hotspots)
+    kpis = [
+        {
+            "id": "citizen-requests",
+            "title": "Citizen Requests",
+            "value": f"{total_reqs:,}",
+            "subtitle": f"Analyzed across {total_districts} districts in {actual_state_name}",
+            "accent": "sky",
+        },
+        {
+            "id": "demand-clusters",
+            "title": "Demand Clusters",
+            "value": f"{len(state_hotspots)} Clusters",
+            "subtitle": f"{actual_state_name} spatial & semantic grouping",
+            "accent": "purple",
+        },
+        {
+            "id": "hotspots-detected",
+            "title": "Hotspots Detected",
+            "value": f"{len(state_hotspots)} Districts",
+            "subtitle": f"{rank1_dist} ranked #1 in {actual_state_name}",
+            "accent": "rose",
+        },
+        {
+            "id": "max-gap-index",
+            "title": "Max Gap Index",
+            "value": f"{rank1['gap_index']} %",
+            "subtitle": f"{rank1_dist} {rank1['category']} Deficit",
+            "accent": "amber",
+        },
+        {
+            "id": "top-priority-score",
+            "title": "Top Priority Score",
+            "value": f"{spotlight_priority['score']} / 100",
+            "subtitle": f"State Planning Model v1.0.0 ({actual_state_name})",
+            "accent": "emerald",
+        },
+    ]
+
+    return {
+        "state": actual_state_name,
+        "state_code": state_code,
+        "headquarters": hq,
+        "total_districts": total_districts,
+        "banner": {
+            "title": f"WHERE SHOULD {actual_state_name.upper()} ACT FIRST?",
+            "subtitle": f"Transforming multilingual citizen feedback into explainable, evidence-backed public infrastructure priorities for the Government of {actual_state_name}.",
+            "data_classification": f"{actual_state_name.upper()}_STATE_PLANNING_DATA",
+        },
+        "kpis": kpis,
+        "spotlight": spotlight,
+        "hotspots": state_hotspots,
+        "pipeline": PIPELINE_STAGES,
+    }

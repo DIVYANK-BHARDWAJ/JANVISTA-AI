@@ -9,6 +9,8 @@ interface NavbarProps {
   onStateChange: (state: string) => void;
   availableStates: string[];
   onSwitchPortal?: () => void;
+  /** Shown next to the role badge when logged in as a State Planner / District Collector. */
+  jurisdictionLabel?: string;
 }
 
 /**
@@ -23,6 +25,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onStateChange,
   availableStates,
   onSwitchPortal,
+  jurisdictionLabel,
 }) => {
   return (
     <header className="bg-[#0f172a] border-b border-slate-700 text-white sticky top-0 z-50 shadow-sm">
@@ -89,9 +92,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               <option value="POLICYMAKER" className="bg-slate-900 text-white">Policymaker</option>
               <option value="ANALYST" className="bg-slate-900 text-white">Analyst</option>
               <option value="DISTRICT_OFFICIAL" className="bg-slate-900 text-white">District Official</option>
+              <option value="STATE_PLANNER" className="bg-slate-900 text-white">State Planner</option>
+              <option value="DISTRICT_COLLECTOR" className="bg-slate-900 text-white">District Collector</option>
               <option value="CITIZEN" className="bg-slate-900 text-white">Citizen View</option>
             </select>
           </div>
+
+          {jurisdictionLabel && (
+            <div className="hidden lg:flex items-center space-x-1.5 bg-amber-900/40 border border-amber-500/40 px-2.5 py-1 rounded text-xs text-amber-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-semibold text-[11px]">{jurisdictionLabel}</span>
+            </div>
+          )}
 
           {/* System Online Stamp */}
           <div className="hidden lg:flex items-center space-x-1.5 bg-emerald-900/60 border border-emerald-500/50 px-2.5 py-1 rounded text-xs text-emerald-200">
