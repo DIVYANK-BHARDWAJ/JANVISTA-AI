@@ -33,12 +33,16 @@ def calculate_priority_score(
     urgency: float,
     investment_mismatch: float,
     custom_weights: Dict[str, float] = None,
+    custom_sources: Dict[str, str] = None,
 ) -> Dict[str, Any]:
     """
     Computes deterministic priority score and explainability breakdown.
     Does NOT require any external API keys.
     """
     weights = custom_weights or DEFAULT_WEIGHTS
+    sources = dict(DATASET_SOURCES)
+    if custom_sources:
+        sources.update(custom_sources)
 
     weighted_demand = round(demand * weights.get("demand", 0.30), 1)
     weighted_gap = round(gap * weights.get("gap", 0.25), 1)
@@ -63,42 +67,42 @@ def calculate_priority_score(
             "weight": weights["demand"],
             "raw_score": demand,
             "weighted_score": weighted_demand,
-            "source_dataset": DATASET_SOURCES["demand"],
+            "source_dataset": sources["demand"],
         },
         {
             "name": "Infrastructure Gap",
             "weight": weights["gap"],
             "raw_score": gap,
             "weighted_score": weighted_gap,
-            "source_dataset": DATASET_SOURCES["gap"],
+            "source_dataset": sources["gap"],
         },
         {
             "name": "Population Vulnerability",
             "weight": weights["vulnerability"],
             "raw_score": vulnerability,
             "weighted_score": weighted_vuln,
-            "source_dataset": DATASET_SOURCES["vulnerability"],
+            "source_dataset": sources["vulnerability"],
         },
         {
             "name": "Accessibility Deficit",
             "weight": weights["accessibility_deficit"],
             "raw_score": accessibility_deficit,
             "weighted_score": weighted_acc,
-            "source_dataset": DATASET_SOURCES["accessibility_deficit"],
+            "source_dataset": sources["accessibility_deficit"],
         },
         {
             "name": "Urgency Signal",
             "weight": weights["urgency"],
             "raw_score": urgency,
             "weighted_score": weighted_urg,
-            "source_dataset": DATASET_SOURCES["urgency"],
+            "source_dataset": sources["urgency"],
         },
         {
             "name": "Investment Mismatch",
             "weight": weights["investment_mismatch"],
             "raw_score": investment_mismatch,
             "weighted_score": weighted_inv,
-            "source_dataset": DATASET_SOURCES["investment_mismatch"],
+            "source_dataset": sources["investment_mismatch"],
         },
     ]
 

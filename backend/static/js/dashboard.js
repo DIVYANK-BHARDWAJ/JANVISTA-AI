@@ -604,12 +604,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const tbody = document.getElementById("hotspotsTableBody");
         if (tbody) {
           tbody.innerHTML = data.hotspots.map((h, idx) => {
-            const rankBadge = idx === 0 
+            const rankBadge = idx === 0
               ? '<span class="badge bg-danger text-white rounded-circle p-1.5 fs-8">#1</span>'
-              : (idx === 1 
-                  ? '<span class="badge bg-warning-subtle text-warning-emphasis rounded-circle p-1.5 fs-8">#2</span>'
-                  : `<span class="badge bg-secondary-subtle text-secondary rounded-circle p-1.5 fs-8">#${idx+1}</span>`);
-            
+              : (idx === 1
+                ? '<span class="badge bg-warning-subtle text-warning-emphasis rounded-circle p-1.5 fs-8">#2</span>'
+                : `<span class="badge bg-secondary-subtle text-secondary rounded-circle p-1.5 fs-8">#${idx + 1}</span>`);
+
             const distLabel = h.district ? `${h.district} District` : h.region_name;
             const stateLabel = data.state || h.state || "India";
 
@@ -646,7 +646,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let optHtml = isNational
           ? '<option value="All">All Districts (National)</option>'
           : `<option value="All">All Districts (${data.state})</option>`;
-        
+
         data.hotspots.forEach((h) => {
           const dName = h.district || h.region_name.split(" ")[0];
           optHtml += `<option value="${dName}">${dName} District</option>`;
@@ -1643,7 +1643,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentOfficerSession = user;
     try {
       sessionStorage.setItem("janvista_officer", JSON.stringify(user));
-    } catch (e) {}
+    } catch (e) { }
 
     if (officerSessionCapsule) officerSessionCapsule.classList.remove("d-none");
     if (btnOpenOfficerLogin) btnOpenOfficerLogin.classList.add("d-none");
@@ -1673,7 +1673,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentOfficerSession = null;
     try {
       sessionStorage.removeItem("janvista_officer");
-    } catch (e) {}
+    } catch (e) { }
 
     if (officerSessionCapsule) officerSessionCapsule.classList.add("d-none");
     if (btnOpenOfficerLogin) btnOpenOfficerLogin.classList.remove("d-none");
@@ -1799,7 +1799,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setOfficerSession(parsed);
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // Initial load
   loadStatesHierarchy();
@@ -1812,7 +1812,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // Global hotspot row selector
-window.selectHotspot = function(index) {
+window.selectHotspot = function (index) {
   const hotspotData = [
     { name: "Sitapur District, UP", cat: "Healthcare", gap: "91.2 %", score: "89.4 / 100", title: "Establish 100-Bed Sub-Divisional Hospital & Trauma Unit", desc: "High maternal & emergency transport deficit coupled with 94/100 citizen grievance density. Nearest tertiary trauma facility is 68 km away." },
     { name: "Koraput District, Odisha", cat: "Drinking Water", gap: "84.6 %", score: "82.1 / 100", title: "Gravity-Fed Piped Drinking Water & Fluoride Filtration", desc: "Severe seasonal water contamination with high fluoride concentration impacting 184 tribal hamlets." },

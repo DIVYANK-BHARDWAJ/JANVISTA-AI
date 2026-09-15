@@ -22,6 +22,8 @@ from data import (
     get_citizen_grievances,
     update_citizen_grievance_status,
     get_state_dashboard_data,
+    get_district_dashboard_data,
+    CITIZEN_GRIEVANCES,
 )
 from credentials import (
     authenticate,
@@ -33,6 +35,7 @@ from credentials import (
     lookup_credential,
 )
 from priority_engine import calculate_priority_score
+from grievance_analytics import compute_national_analytics
 
 
 
@@ -102,7 +105,19 @@ def get_dashboard_overview():
     Main endpoint for the Dashboard view.
     Accepts optional ?state=... to return decision support for the respective state.
     """
+    district_param = request.args.get("district", "").strip()
     state_param = request.args.get("state", "").strip()
+
+    if district_param and district_param.lower() not in ["all", "all districts", "national"]:
+        district_data = get_district_dashboard_data(district_name=district_param, state_name=state_param)
+        return jsonify({
+            "success": True,
+            "scope": "district",
+            "state": district_data["state"],
+            "district": district_data["district"],
+            "data": district_data
+        })
+
     if state_param and state_param.lower() not in ["all", "all india", "national"]:
         state_data = get_state_dashboard_data(state_param)
         return jsonify({
@@ -112,7 +127,26 @@ def get_dashboard_overview():
             "data": state_data
         })
 
-    total_requests = sum(h["citizen_requests"] for h in HOTSPOTS)
+    # ── National scope: compute metrics live from CITIZEN_GRIEVANCES ─────────
+    national = compute_national_analytics(HOTSPOTS)
+    total_requests = national["total_citizen_requests"]
+    # Fall back to static sum if no real grievances submitted yet
+    if total_requests == 0:
+        total_requests = sum(h["citizen_requests"] for h in HOTSPOTS)
+
+    live_hotspots = national["hotspots"]
+    cluster_count = national["cluster_count"]
+    top_hotspot = live_hotspots[0] if live_hotspots else HOTSPOTS[0]
+
+    # Recompute top priority score from the leading hotspot's live gap signal
+    top_priority = calculate_priority_score(
+        demand=TOP_RECOMMENDATION["priority_breakdown"]["factors"][0]["raw_score"],
+        gap=top_hotspot.get("gap_index", HOTSPOTS[0]["gap_index"]),
+        vulnerability=86.5,
+        accessibility_deficit=88.0,
+        urgency=82.0,
+        investment_mismatch=74.0,
+    )
 
     kpis = [
         {
@@ -125,28 +159,28 @@ def get_dashboard_overview():
         {
             "id": "demand-clusters",
             "title": "Demand Clusters",
-            "value": f"{len(HOTSPOTS)} Clusters",
+            "value": f"{cluster_count} Clusters",
             "subtitle": "Spatial & semantic aggregation",
             "accent": "purple",
         },
         {
             "id": "hotspots-detected",
             "title": "Hotspots Detected",
-            "value": f"{len(HOTSPOTS)} Regions",
-            "subtitle": f"{HOTSPOTS[0]['region_name']} ranked #1",
+            "value": f"{len(live_hotspots)} Regions",
+            "subtitle": f"{top_hotspot['region_name']} ranked #1",
             "accent": "rose",
         },
         {
             "id": "max-gap-index",
             "title": "Max Gap Index",
-            "value": f"{HOTSPOTS[0]['gap_index']} %",
-            "subtitle": f"{HOTSPOTS[0]['region_name']} {HOTSPOTS[0]['category']} Deficit",
+            "value": f"{top_hotspot['gap_index']} %",
+            "subtitle": f"{top_hotspot['region_name']} {top_hotspot['category']} Deficit",
             "accent": "amber",
         },
         {
             "id": "top-priority-score",
             "title": "Top Priority Score",
-            "value": f"{TOP_RECOMMENDATION['priority_score']} / 100",
+            "value": f"{top_priority['score']} / 100",
             "subtitle": "Model v1.0.0 (Audited)",
             "accent": "emerald",
         },
@@ -163,7 +197,7 @@ def get_dashboard_overview():
             },
             "kpis": kpis,
             "spotlight": TOP_RECOMMENDATION,
-            "hotspots": HOTSPOTS,
+            "hotspots": live_hotspots,
             "pipeline": PIPELINE_STAGES,
         }
     })
@@ -173,9 +207,20 @@ def get_dashboard_overview():
 def get_kpis():
     """
     Returns only the 5 summary KPIs for fast dashboard updates.
-    Accepts optional ?state=... for respective state.
+    Accepts optional ?district=... or ?state=... for respective jurisdiction.
     """
+    district_param = request.args.get("district", "").strip()
     state_param = request.args.get("state", "").strip()
+
+    if district_param and district_param.lower() not in ["all", "all districts", "national"]:
+        district_data = get_district_dashboard_data(district_name=district_param, state_name=state_param)
+        return jsonify({
+            "success": True,
+            "scope": "district",
+            "district": district_data["district"],
+            "data": district_data["kpis"]
+        })
+
     if state_param and state_param.lower() not in ["all", "all india", "national"]:
         state_data = get_state_dashboard_data(state_param)
         return jsonify({
@@ -203,9 +248,20 @@ def get_kpis():
 def get_spotlight():
     """
     Returns the #1 Priority Opportunity with the explainability ('Why This?') breakdown.
-    Accepts optional ?state=... for respective state.
+    Accepts optional ?district=... or ?state=... for respective jurisdiction.
     """
+    district_param = request.args.get("district", "").strip()
     state_param = request.args.get("state", "").strip()
+
+    if district_param and district_param.lower() not in ["all", "all districts", "national"]:
+        district_data = get_district_dashboard_data(district_name=district_param, state_name=state_param)
+        return jsonify({
+            "success": True,
+            "scope": "district",
+            "district": district_data["district"],
+            "data": district_data["spotlight"]
+        })
+
     if state_param and state_param.lower() not in ["all", "all india", "national"]:
         state_data = get_state_dashboard_data(state_param)
         return jsonify({
@@ -225,9 +281,21 @@ def get_spotlight():
 def get_hotspots():
     """
     Returns the ranked list of priority hotspots.
-    Accepts optional ?state=... for respective state.
+    Accepts optional ?district=... or ?state=... for respective jurisdiction.
     """
+    district_param = request.args.get("district", "").strip()
     state_param = request.args.get("state", "").strip()
+
+    if district_param and district_param.lower() not in ["all", "all districts", "national"]:
+        district_data = get_district_dashboard_data(district_name=district_param, state_name=state_param)
+        return jsonify({
+            "success": True,
+            "scope": "district",
+            "district": district_data["district"],
+            "count": len(district_data["hotspots"]),
+            "data": district_data["hotspots"]
+        })
+
     if state_param and state_param.lower() not in ["all", "all india", "national"]:
         state_data = get_state_dashboard_data(state_param)
         return jsonify({

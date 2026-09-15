@@ -666,7 +666,8 @@
         <div
           class="card-header bg-white border-bottom border-slate-200 py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
           <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-danger text-white rounded-pill px-2.5 py-1 fs-8 fw-bold text-uppercase">
+            <span class="badge bg-danger text-white rounded-pill px-2.5 py-1 fs-8 fw-bold text-uppercase"
+              id="spotlightBadge">
               <i class="bi bi-pin-angle-fill me-1"></i> National Priority #1
             </span>
             <h5 class="mb-0 fw-bold text-slate-900 fs-6">
@@ -711,19 +712,19 @@
                 <div class="row g-2 text-center">
                   <div class="col-6 col-sm-3 border-end border-slate-300">
                     <div class="text-secondary fs-8 fw-medium">Estimated Capex</div>
-                    <div class="fw-bold text-slate-900 fs-6">₹42.5 Cr</div>
+                    <div class="fw-bold text-slate-900 fs-6" id="spotlightCapex">₹42.5 Cr</div>
                   </div>
                   <div class="col-6 col-sm-3 border-end-sm border-slate-300">
                     <div class="text-secondary fs-8 fw-medium">Population Impact</div>
-                    <div class="fw-bold text-slate-900 fs-6">420,000</div>
+                    <div class="fw-bold text-slate-900 fs-6" id="spotlightPopulation">420,000</div>
                   </div>
                   <div class="col-6 col-sm-3 border-end border-slate-300">
                     <div class="text-secondary fs-8 fw-medium">Current Transit</div>
-                    <div class="fw-bold text-danger fs-6">94 Mins</div>
+                    <div class="fw-bold text-danger fs-6" id="spotlightCurrentTransit">94 Mins</div>
                   </div>
                   <div class="col-6 col-sm-3">
                     <div class="text-secondary fs-8 fw-medium">Target Transit</div>
-                    <div class="fw-bold text-success fs-6">25 Mins</div>
+                    <div class="fw-bold text-success fs-6" id="spotlightTargetTransit">25 Mins</div>
                   </div>
                 </div>
               </div>
@@ -732,12 +733,12 @@
               <div class="d-flex flex-wrap gap-2">
                 <button
                   class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1.5"
-                  data-bs-toggle="modal" data-bs-target="#actionModal">
+                  data-bs-toggle="modal" data-bs-target="#actionModal" id="btnApproveInPrinciple">
                   <i class="bi bi-check2-circle"></i> Approve In-Principle
                 </button>
                 <button
                   class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1.5"
-                  data-bs-toggle="modal" data-bs-target="#evidenceModal">
+                  data-bs-toggle="modal" data-bs-target="#evidenceModal" id="btnViewEvidenceChain">
                   <i class="bi bi-journal-text"></i> View Evidence Chain
                 </button>
               </div>
@@ -866,9 +867,9 @@
             class="card-header bg-white border-bottom border-slate-200 py-3 px-4 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold text-slate-900 fs-6 d-flex align-items-center gap-2">
               <i class="bi bi-geo-alt-fill text-danger"></i>
-              Ranked Regional Hotspots
+              <span id="hotspotsHeaderTitle">Ranked Regional Hotspots</span>
             </h5>
-            <span class="badge bg-slate-100 text-slate-700 border border-slate-200 fs-8">
+            <span class="badge bg-slate-100 text-slate-700 border border-slate-200 fs-8" id="hotspotsCountBadge">
               5 Districts Evaluated
             </span>
           </div>
@@ -877,7 +878,7 @@
               <table class="table table-hover align-middle mb-0 text-nowrap">
                 <thead class="table-light fs-8 text-uppercase tracking-wider text-secondary">
                   <tr>
-                    <th class="ps-4">Rank & Region</th>
+                    <th class="ps-4" id="hotspotsTableColRegion">Rank & Region</th>
                     <th>Sector Gap</th>
                     <th>Gap Index</th>
                     <th>Priority</th>
@@ -1318,11 +1319,14 @@
         </div>
         <div class="modal-body py-4">
           <p class="fs-7 text-secondary">
-            You are logging an official administrative endorsement as <strong>Policymaker (National)</strong> for:
+            You are logging an official administrative endorsement as <strong id="actionModalOfficerRole">Policymaker
+              (National)</strong> for:
           </p>
           <div class="bg-slate-50 border border-slate-200 rounded-3 p-3">
-            <div class="fw-bold text-slate-900 fs-7">Sitapur 100-Bed Sub-Divisional Hospital & Trauma Unit</div>
-            <div class="text-secondary fs-8 mt-1">Estimated Capex: ₹42.5 Cr &bull; Beneficiaries: 420,000 citizens</div>
+            <div class="fw-bold text-slate-900 fs-7" id="actionModalProjectTitle">Sitapur 100-Bed Sub-Divisional
+              Hospital & Trauma Unit</div>
+            <div class="text-secondary fs-8 mt-1" id="actionModalProjectMeta">Estimated Capex: ₹42.5 Cr &bull;
+              Beneficiaries: 420,000 citizens</div>
           </div>
           <div class="form-check mt-3 fs-8">
             <input class="form-check-input" type="checkbox" id="chkAudit" checked>
@@ -1350,12 +1354,12 @@
         <div class="modal-header border-bottom border-slate-200 pb-3">
           <h5 class="modal-title fw-bold text-slate-900 fs-6">
             <i class="bi bi-journal-text text-primary me-1.5"></i>
-            Full Provenance & Evidence Chain
+            <span id="evidenceModalTitle">Full Provenance & Evidence Chain</span>
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body py-3">
-          <div class="list-group list-group-flush fs-7">
+        <div class="modal-body py-3" id="evidenceModalBody">
+          <div class="list-group list-group-flush fs-7" id="evidenceModalList">
             <div class="list-group-item px-0 py-2.5">
               <div class="d-flex justify-content-between">
                 <strong class="text-slate-900">Citizen Demand Sample</strong>
@@ -3061,15 +3065,29 @@
         }
       }
 
+      // Active dashboard state variables
+      let activeDashboardData = null;
+      let activeHotspots = [];
+      let activeSpotlight = null;
+      let currentSimDefaults = {
+        demand: 94,
+        gap: 91,
+        vulnerability: 86,
+        accessibility_deficit: 88,
+        urgency: 82,
+        investment_mismatch: 74
+      };
+
       // Reset simulator
       if (btnResetSim) {
         btnResetSim.addEventListener("click", () => {
-          simDemand.value = 94; valDemand.textContent = "94";
-          simGap.value = 91; valGap.textContent = "91";
-          simVuln.value = 86; valVuln.textContent = "86";
-          simAcc.value = 88; valAcc.textContent = "88";
-          simUrg.value = 82; valUrg.textContent = "82";
-          simInv.value = 74; valInv.textContent = "74";
+          const d = currentSimDefaults || { demand: 94, gap: 91, vulnerability: 86, accessibility_deficit: 88, urgency: 82, investment_mismatch: 74 };
+          if (simDemand && valDemand) { simDemand.value = d.demand; valDemand.textContent = d.demand; }
+          if (simGap && valGap) { simGap.value = d.gap; valGap.textContent = d.gap; }
+          if (simVuln && valVuln) { simVuln.value = d.vulnerability; valVuln.textContent = d.vulnerability; }
+          if (simAcc && valAcc) { simAcc.value = d.accessibility_deficit; valAcc.textContent = d.accessibility_deficit; }
+          if (simUrg && valUrg) { simUrg.value = d.urgency; valUrg.textContent = d.urgency; }
+          if (simInv && valInv) { simInv.value = d.investment_mismatch; valInv.textContent = d.investment_mismatch; }
           calculateLivePriority();
           showToast('<i class="bi bi-arrow-counterclockwise me-1 text-info"></i> Simulator reset to official defaults.');
         });
@@ -3090,11 +3108,14 @@
           btnRefreshData.disabled = true;
 
           try {
-            const res = await fetch("/api/dashboard/overview");
-            const json = await res.json();
-            if (json.success) {
-              showToast('<i class="bi bi-cloud-check-fill me-1 text-success"></i> Dashboard metrics re-synchronized with Flask backend!');
+            if (currentActiveRole === "District Collector" && currentOfficerSession?.district) {
+              await loadDashboardForDistrict(currentOfficerSession.district, currentOfficerSession.state);
+            } else if (currentActiveRole === "State Planner" && statePlannerDropdown?.value) {
+              await loadDashboardForState(statePlannerDropdown.value);
+            } else {
+              await loadDashboardForState("National");
             }
+            showToast('<i class="bi bi-cloud-check-fill me-1 text-success"></i> Dashboard metrics re-synchronized with Flask backend!');
           } catch (err) {
             showToast('<i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> Error refreshing backend data.');
           } finally {
@@ -3107,7 +3128,89 @@
       // Confirm Approval
       if (btnConfirmApproval) {
         btnConfirmApproval.addEventListener("click", () => {
-          showToast('<i class="bi bi-shield-fill-check me-1 text-emerald"></i> In-principle approval logged to tamper-evident audit ledger.');
+          const projTitle = activeSpotlight ? activeSpotlight.title : "Infrastructure Recommendation";
+          const officer = (currentOfficerSession && currentOfficerSession.role === "district_collector")
+            ? currentOfficerSession.display_name
+            : (currentOfficerSession ? currentOfficerSession.display_name : "Authorized Decision-Maker");
+          showToast(`<i class="bi bi-shield-fill-check me-1 text-success"></i> In-principle endorsement confirmed for <strong>${projTitle}</strong> by ${officer} into the tamper-evident audit ledger.`);
+        });
+      }
+
+      // Populate the "Approve In-Principle" confirmation modal from whichever
+      // spotlight is currently loaded (national / state / district) instead
+      // of the hardcoded Sitapur placeholder text baked into the HTML.
+      const actionModalEl = document.getElementById("actionModal");
+      if (actionModalEl) {
+        actionModalEl.addEventListener("show.bs.modal", () => {
+          if (!activeSpotlight) return;
+
+          const roleEl = document.getElementById("actionModalOfficerRole");
+          if (roleEl) {
+            roleEl.textContent = (currentOfficerSession && currentOfficerSession.display_name)
+              ? currentOfficerSession.display_name
+              : (currentActiveRole === "State Planner" ? "State Planner" : "Policymaker (National)");
+          }
+
+          const titleEl = document.getElementById("actionModalProjectTitle");
+          if (titleEl) titleEl.textContent = activeSpotlight.title;
+
+          const metaEl = document.getElementById("actionModalProjectMeta");
+          if (metaEl) {
+            const capex = activeSpotlight.estimated_cost_cr ?? activeSpotlight.estimated_capex;
+            const pop = activeSpotlight.impacted_population ?? activeSpotlight.population_impact;
+            const capexStr = capex != null ? `₹${capex} Cr` : "N/A";
+            const popStr = pop != null ? Number(pop).toLocaleString() : "N/A";
+            metaEl.textContent = `Estimated Capex: ${capexStr} • Beneficiaries: ${popStr} citizens`;
+          }
+        });
+      }
+
+      // Populate the "View Evidence Chain" modal from the currently loaded
+      // jurisdiction. Only district-scoped payloads carry a full
+      // evidence_chain object today — for state/national scope we leave the
+      // existing static illustrative content in place.
+      const evidenceModalEl = document.getElementById("evidenceModal");
+      if (evidenceModalEl) {
+        evidenceModalEl.addEventListener("show.bs.modal", () => {
+          const ec = activeDashboardData && activeDashboardData.evidence_chain;
+          const listEl = document.getElementById("evidenceModalList");
+          const titleEl = document.getElementById("evidenceModalTitle");
+          if (!ec || !listEl) return;
+
+          if (titleEl) {
+            titleEl.textContent = `Full Provenance & Evidence Chain — ${(activeSpotlight && activeSpotlight.area) || (activeDashboardData && activeDashboardData.district) || (activeSpotlight && activeSpotlight.region_name) || ""}`;
+          }
+
+          listEl.innerHTML = `
+            <div class="list-group-item px-0 py-2.5">
+              <div class="d-flex justify-content-between">
+                <strong class="text-slate-900">Citizen Demand Sample</strong>
+                <span class="badge bg-light text-secondary border">${Number(ec.demand_records_count || 0).toLocaleString()} Records</span>
+              </div>
+              <p class="text-secondary fs-8 mb-0 mt-1">"${ec.citizen_quote_local || ec.citizen_quote_en || ""}"</p>
+            </div>
+            <div class="list-group-item px-0 py-2.5">
+              <div class="d-flex justify-content-between">
+                <strong class="text-slate-900">${ec.facility_audit_title || "Facility Audit"}</strong>
+                <span class="badge bg-success-subtle text-success border">Verified</span>
+              </div>
+              <p class="text-secondary fs-8 mb-0 mt-1">${ec.facility_audit_finding || ""}</p>
+            </div>
+            <div class="list-group-item px-0 py-2.5">
+              <div class="d-flex justify-content-between">
+                <strong class="text-slate-900">${ec.spatial_transit_title || "Spatial Transit Assessment"}</strong>
+                <span class="badge bg-info-subtle text-info border">GIS Model</span>
+              </div>
+              <p class="text-secondary fs-8 mb-0 mt-1">${ec.spatial_transit_finding || ""}</p>
+            </div>
+            <div class="list-group-item px-0 py-2.5">
+              <div class="d-flex justify-content-between">
+                <strong class="text-slate-900">Official Endorsement</strong>
+                <span class="badge bg-primary-subtle text-primary border">Collectorate</span>
+              </div>
+              <p class="text-secondary fs-8 mb-0 mt-1">${ec.official_endorsement || ""}</p>
+            </div>
+          `;
         });
       }
 
@@ -3269,7 +3372,10 @@
             }
 
             if (currentOfficerSession && currentOfficerSession.role === "district_collector") {
-              loadDashboardForState(currentOfficerSession.state);
+              // Pass the district too — previously this only passed the state,
+              // which loaded the state-wide dashboard (other districts) instead
+              // of this officer's own district / taluk-level data.
+              loadDashboardForDistrict(currentOfficerSession.district, currentOfficerSession.state);
             } else {
               loadDashboardForState("National");
             }
@@ -3467,11 +3573,65 @@
       }
 
       // =========================================================================
-      // STATE-AWARE DASHBOARD LOADER (Respective States & National Scope)
+      // STATE- & DISTRICT-AWARE DASHBOARD LOADER (National / State / District scope)
       // =========================================================================
-      async function loadDashboardForState(stateName) {
+
+      // Color tokens for the 6 explainability factors, in fixed factor order
+      // (Citizen Demand, Infrastructure Gap, Population Vulnerability,
+      // Accessibility Deficit, Urgency Signal, Investment Mismatch).
+      const FACTOR_COLORS = ["primary", "danger", "warning", "info", "purple", "dark"];
+
+      // Rebuilds the "Why This?" 6-factor explainability bars from whatever
+      // priority_breakdown came back with the current spotlight. Previously
+      // this whole block was static HTML that never changed for any role.
+      function renderFactorBars(breakdown) {
+        const container = document.getElementById("factorBarsContainer");
+        if (!container || !breakdown || !Array.isArray(breakdown.factors)) return;
+
+        container.innerHTML = breakdown.factors.map((f, idx) => {
+          const color = FACTOR_COLORS[idx % FACTOR_COLORS.length];
+          const weightPct = Math.round((f.weight || 0) * 100);
+          const raw = f.raw_score ?? f.rawScore ?? 0;
+          const weighted = f.weighted_score ?? f.weightedScore ?? 0;
+          const source = f.source_dataset ?? f.sourceDataset ?? "";
+          return `
+            <div class="factor-item${idx > 0 ? " mt-2.5" : ""}">
+              <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                <span class="text-slate-800">
+                  ${f.name} <span class="badge bg-light text-secondary border fs-8">Weight: ${weightPct}%</span>
+                </span>
+                <span class="text-slate-900">${raw} raw &bull; <strong class="text-${color}">+${weighted} pts</strong></span>
+              </div>
+              <div class="progress" style="height: 7px;">
+                <div class="progress-bar bg-${color}" role="progressbar" style="width: ${Math.max(0, Math.min(100, raw))}%;"></div>
+              </div>
+              <div class="text-slate-500 fs-9 mt-0.5">Source: ${source}</div>
+            </div>
+          `;
+        }).join("");
+
+        const scoreBadge = document.querySelector("#spotlight-section .badge.bg-emerald-subtle");
+        if (scoreBadge && breakdown.score != null) {
+          scoreBadge.textContent = `Score: ${breakdown.score} / 100`;
+        }
+      }
+
+      // Convenience wrapper so callers can pass (district, state) in that
+      // order — matches how the Refresh button and role controller already
+      // invoke it — while the actual fetch logic lives in one place below.
+      async function loadDashboardForDistrict(districtName, stateName) {
+        return loadDashboardForState(stateName, districtName);
+      }
+
+      async function loadDashboardForState(stateName, districtName) {
         const isNational = !stateName || stateName.toLowerCase() === "national" || stateName.toLowerCase() === "all" || stateName.toLowerCase() === "all india";
-        const url = isNational ? "/api/dashboard/overview" : `/api/dashboard/overview?state=${encodeURIComponent(stateName)}`;
+        const hasDistrict = !!(districtName && districtName.trim().length > 0);
+
+        let url = "/api/dashboard/overview";
+        const qp = new URLSearchParams();
+        if (!isNational) qp.append("state", stateName);
+        if (hasDistrict) qp.append("district", districtName);
+        if ([...qp].length) url += `?${qp.toString()}`;
 
         try {
           const res = await fetch(url);
@@ -3479,6 +3639,16 @@
           if (!json.success || !json.data) return;
 
           const data = json.data;
+          // Trust what the backend actually resolved to (it falls back
+          // gracefully on an unmatched district name), rather than guessing.
+          const scope = json.scope || (hasDistrict ? "district" : (isNational ? "national" : "state"));
+
+          // Keep the shared "active dashboard" state in sync so other
+          // handlers (Approve In-Principle, Evidence Chain, Simulator Reset)
+          // reference the CURRENTLY loaded jurisdiction instead of nothing.
+          activeDashboardData = data;
+          activeHotspots = Array.isArray(data.hotspots) ? data.hotspots : [];
+          activeSpotlight = data.spotlight || null;
 
           // 1. Update State Planner Jurisdiction Bar
           if (statePlannerActiveStateName) {
@@ -3547,32 +3717,80 @@
             const spotlightTitle = document.getElementById("spotlightTitle");
             const spotlightDesc = document.getElementById("spotlightDesc");
 
+            // For district scope, show "Area/Taluk, District" rather than
+            // the generic region_name/district-only label.
+            const areaOrDistrictLabel = scope === "district"
+              ? `${spot.area || (spot.region_name || "").split(",")[0]}, ${spot.district || data.district || ""}`
+              : (spot.region_name || `${spot.district || ''}, ${data.state || ''}`);
+
             if (spotlightUrgency) spotlightUrgency.textContent = spot.urgency_tier || spot.urgency || "CRITICAL DEFICIT";
             if (spotlightCategory) spotlightCategory.textContent = spot.category || spot.sector || "Infrastructure";
-            if (spotlightRegion) spotlightRegion.textContent = spot.region_name || `${spot.district || ''}, ${data.state || ''}`;
+            if (spotlightRegion) spotlightRegion.textContent = areaOrDistrictLabel;
             if (spotlightTitle) spotlightTitle.textContent = spot.title;
             if (spotlightDesc) spotlightDesc.textContent = spot.description;
 
-            // Capex and impact metrics
-            const capexVal = spot.estimated_cost_cr || spot.estimated_capex;
-            if (capexVal) {
-              const capexEl = document.querySelector("#spotlight-section .bg-slate-100 .col-6:nth-child(1) .fs-6");
-              if (capexEl) capexEl.textContent = `₹${capexVal} Cr`;
-            }
-            const popVal = spot.impacted_population || spot.population_impact;
-            if (popVal) {
-              const popEl = document.querySelector("#spotlight-section .bg-slate-100 .col-6:nth-child(2) .fs-6");
-              if (popEl) popEl.textContent = Number(popVal).toLocaleString();
-            }
+            // Capex, population, and transit metrics — use the actual element
+            // IDs rather than fragile nth-child selectors so every field
+            // updates reliably (Current/Target Transit were never updating
+            // before this fix).
+            const capexVal = spot.estimated_cost_cr ?? spot.estimated_capex;
+            const capexEl = document.getElementById("spotlightCapex");
+            if (capexEl && capexVal != null) capexEl.textContent = `₹${capexVal} Cr`;
 
-            // Priority Score badge in explainability breakdown
-            const scoreBadge = document.querySelector("#spotlight-section .badge.bg-emerald-subtle");
-            if (scoreBadge && spot.priority_score) {
-              scoreBadge.textContent = `Score: ${spot.priority_score} / 100`;
+            const popVal = spot.impacted_population ?? spot.population_impact;
+            const popEl = document.getElementById("spotlightPopulation");
+            if (popEl && popVal != null) popEl.textContent = Number(popVal).toLocaleString();
+
+            const km = spot.key_metrics || {};
+            const curTransit = km.current_transit_mins ?? km.average_transit_time_mins;
+            const tarTransit = km.target_transit_mins ?? km.target_transit_time_mins;
+            const curTransitEl = document.getElementById("spotlightCurrentTransit");
+            if (curTransitEl && curTransit != null) curTransitEl.textContent = `${curTransit} Mins`;
+            const tarTransitEl = document.getElementById("spotlightTargetTransit");
+            if (tarTransitEl && tarTransit != null) tarTransitEl.textContent = `${tarTransit} Mins`;
+
+            // Rebuild the 6-factor "Why This?" bars and score badge from
+            // this jurisdiction's own breakdown (previously static HTML).
+            renderFactorBars(spot.priority_breakdown);
+
+            // Keep the Priority Simulator's "official defaults" (used by the
+            // Reset button) and its visible sliders in sync with whichever
+            // jurisdiction is now loaded, instead of a fixed national baseline.
+            if (spot.priority_breakdown && Array.isArray(spot.priority_breakdown.factors) && spot.priority_breakdown.factors.length >= 6) {
+              const raws = spot.priority_breakdown.factors.map((f) => f.raw_score ?? f.rawScore ?? 0);
+              currentSimDefaults = {
+                demand: raws[0], gap: raws[1], vulnerability: raws[2],
+                accessibility_deficit: raws[3], urgency: raws[4], investment_mismatch: raws[5],
+              };
+              const sliderInputs = [simDemand, simGap, simVuln, simAcc, simUrg, simInv];
+              const sliderLabels = [valDemand, valGap, valVuln, valAcc, valUrg, valInv];
+              sliderInputs.forEach((input, idx) => {
+                if (!input) return;
+                input.value = raws[idx];
+                if (sliderLabels[idx]) sliderLabels[idx].textContent = raws[idx];
+              });
+              calculateLivePriority();
             }
           }
 
           // 5. Update Ranked Hotspots Table
+          const hotspotsCountBadge = document.getElementById("hotspotsCountBadge");
+          const hotspotsHeaderTitle = document.getElementById("hotspotsHeaderTitle");
+          if (hotspotsCountBadge) {
+            if (scope === "district") {
+              hotspotsCountBadge.textContent = `${activeHotspots.length} Areas / Taluks Evaluated`;
+            } else if (scope === "state") {
+              hotspotsCountBadge.textContent = `${activeHotspots.length} Districts Evaluated`;
+            } else {
+              hotspotsCountBadge.textContent = `${activeHotspots.length} States Evaluated`;
+            }
+          }
+          if (hotspotsHeaderTitle) {
+            hotspotsHeaderTitle.textContent = scope === "district"
+              ? `Ranked Taluk / Block Hotspots (${data.district || ""})`
+              : "Ranked Regional Hotspots";
+          }
+
           if (data.hotspots && Array.isArray(data.hotspots)) {
             const tbody = document.getElementById("hotspotsTableBody");
             if (tbody) {
@@ -3583,8 +3801,20 @@
                     ? '<span class="badge bg-warning-subtle text-warning-emphasis rounded-circle p-1.5 fs-8">#2</span>'
                     : `<span class="badge bg-secondary-subtle text-secondary rounded-circle p-1.5 fs-8">#${idx + 1}</span>`);
 
-                const distLabel = h.district ? `${h.district} District` : h.region_name;
-                const stateLabel = data.state || h.state || "India";
+                // For district scope every row shares the SAME h.district (the
+                // DC's own district), so label by the sub-area/taluk instead,
+                // with the district as the secondary line.
+                let distLabel, stateLabel;
+                if (scope === "district") {
+                  distLabel = h.area || (h.region_name || "").split(",")[0].trim();
+                  stateLabel = h.district || data.district || "";
+                } else if (h.district) {
+                  distLabel = `${h.district} District`;
+                  stateLabel = data.state || h.state || "India";
+                } else {
+                  distLabel = h.region_name;
+                  stateLabel = data.state || h.state || "India";
+                }
 
                 return `
               <tr>
@@ -3616,14 +3846,20 @@
           const filterDistrict = document.getElementById("filterDistrict");
           if (filterDistrict && data.hotspots && Array.isArray(data.hotspots)) {
             const currentVal = filterDistrict.value;
-            let optHtml = isNational
-              ? '<option value="All">All Districts (National)</option>'
-              : `<option value="All">All Districts (${data.state})</option>`;
-
-            data.hotspots.forEach((h) => {
-              const dName = h.district || h.region_name.split(" ")[0];
-              optHtml += `<option value="${dName}">${dName} District</option>`;
-            });
+            let optHtml;
+            if (scope === "district") {
+              // A District Collector's grievance ledger is already pinned
+              // server-side to their own district — nothing else to filter by.
+              optHtml = `<option value="All">All Areas (${data.district})</option>`;
+            } else {
+              optHtml = isNational
+                ? '<option value="All">All Districts (National)</option>'
+                : `<option value="All">All Districts (${data.state})</option>`;
+              data.hotspots.forEach((h) => {
+                const dName = h.district || h.region_name.split(" ")[0];
+                optHtml += `<option value="${dName}">${dName} District</option>`;
+              });
+            }
             filterDistrict.innerHTML = optHtml;
             if (currentVal && filterDistrict.querySelector(`option[value="${currentVal}"]`)) {
               filterDistrict.value = currentVal;
@@ -3726,8 +3962,10 @@
           let statusBadge = `<span class="badge bg-secondary-subtle text-secondary border">${item.status}</span>`;
           if (item.status === "FIELD_AUDIT_SCHEDULED") {
             statusBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-semibold"><i class="bi bi-calendar-event me-1"></i>Audit Scheduled</span>`;
-          } else if (item.status === "ACTION_APPROVED" || item.status === "IN_PROGRESS") {
+          } else if (item.status === "ACTION_APPROVED") {
             statusBadge = `<span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold"><i class="bi bi-check-circle me-1"></i>Action Approved</span>`;
+          } else if (item.status === "IN_PROGRESS") {
+            statusBadge = `<span class="badge bg-info-subtle text-info border border-info-subtle fw-semibold"><i class="bi bi-arrow-repeat me-1"></i>In Progress</span>`;
           } else if (item.status === "RESOLVED") {
             statusBadge = `<span class="badge bg-success text-white fw-bold"><i class="bi bi-check-all me-1"></i>Resolved</span>`;
           } else {
