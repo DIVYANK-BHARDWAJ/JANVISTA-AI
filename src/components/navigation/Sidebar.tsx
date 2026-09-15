@@ -1,5 +1,4 @@
 import React from "react";
-import { UserRole } from "@/types";
 import {
   LayoutDashboard,
   Map,
@@ -27,34 +26,25 @@ export type NavTab =
 interface SidebarProps {
   activeTab: NavTab;
   onTabChange: (tab: NavTab) => void;
-  currentRole?: UserRole;
 }
 
 /**
  * Sidebar Component (Neutral Slate Theme - No Blue)
  * Renders structured, clean navigation across primary decision-intelligence modules.
  */
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, currentRole }) => {
-  const isCitizen = currentRole === "CITIZEN";
-
-  const allTabs: Array<{ id: NavTab; label: string; icon: React.ElementType; tag?: string; officialOnly?: boolean; citizenOnly?: boolean }> = [
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
+  const tabs: Array<{ id: NavTab; label: string; icon: React.ElementType; tag?: string }> = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "map", label: "National Map", icon: Map },
     { id: "demand", label: "Citizen Demand", icon: MessageSquarePlus },
-    { id: "citizen-portal", label: "File a Grievance", icon: MessageSquarePlus, tag: "CITIZEN", citizenOnly: true },
-    { id: "hotspots", label: "Hotspots", icon: Flame, tag: "AI", officialOnly: true },
+    { id: "citizen-portal", label: "Citizen Ingestion Portal", icon: MessageSquarePlus, tag: "LIVE" },
+    { id: "hotspots", label: "Hotspots", icon: Flame, tag: "AI" },
     { id: "infrastructure", label: "Infrastructure Gaps", icon: Building2 },
-    { id: "recommendations", label: "Recommendations", icon: Award, tag: "WHY THIS?", officialOnly: true },
+    { id: "recommendations", label: "Recommendations", icon: Award, tag: "WHY THIS?" },
     { id: "evidence", label: "Evidence Explorer", icon: Database },
-    { id: "simulator", label: "Impact Simulator", icon: Sliders, officialOnly: true },
+    { id: "simulator", label: "Impact Simulator", icon: Sliders },
     { id: "ask-janvista", label: "Ask JANVISTA", icon: Sparkles, tag: "RAG" },
   ];
-
-  // Citizens: hide official-only tabs (Hotspots, Simulator)
-  // Officials: hide citizen-only tabs (File a Grievance portal)
-  const tabs = isCitizen
-    ? allTabs.filter((t) => !t.officialOnly)
-    : allTabs.filter((t) => !t.citizenOnly);
 
   return (
     <aside className="w-full md:w-64 bg-white border-r border-slate-200 p-3 shrink-0 shadow-sm">

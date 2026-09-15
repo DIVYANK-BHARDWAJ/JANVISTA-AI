@@ -64,12 +64,7 @@ export default function Home() {
       {/* Top Navigation Bar */}
       <Navbar
         currentRole={currentRole}
-        onRoleChange={(role) => {
-          setCurrentRole(role);
-          if (role === "CITIZEN") {
-            setViewMode("citizen");
-          }
-        }}
+        onRoleChange={setCurrentRole}
         selectedState={selectedState}
         onStateChange={setSelectedState}
         availableStates={availableStates}
@@ -79,7 +74,7 @@ export default function Home() {
       {/* Main Workspace Body */}
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Left Sidebar Navigation */}
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} currentRole={currentRole} />
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Tab View Container */}
         <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-6 overflow-y-auto">

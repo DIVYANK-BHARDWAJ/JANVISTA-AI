@@ -149,7 +149,7 @@ PIPELINE_STAGES = [
     {"step": "07", "name": "Evidence & Action", "description": "Full audit-backed policy recommendation"},
 ]
 
-# Initial Seed Citizen Grievances with rich details for District Collectors and Policy Makers
+# Initial Seed Citizen Grievances
 CITIZEN_GRIEVANCES = [
     {
         "tracking_id": "JAN-2026-UP-84219",
@@ -157,41 +157,11 @@ CITIZEN_GRIEVANCES = [
         "phone": "+91 98765 43210",
         "state": "Uttar Pradesh",
         "district": "Sitapur",
-        "village_or_ward": "Khairabad Block, Rampur Kalan Village",
         "category": "Healthcare",
         "urgency": "CRITICAL",
-        "description": "Our local Community Health Centre has had no surgeon or functioning blood bank for 8 months. Patients and pregnant mothers must travel 68km to Lucknow in critical emergencies over broken roads.",
+        "description": "Our local Community Health Centre has had no surgeon or functioning blood bank for 8 months. Patients must travel 68km to Lucknow in emergencies.",
         "status": "UNDER_REVIEW",
-        "department": "District Health Society & CMO",
         "timestamp": "2026-09-12 11:20",
-        "official_remarks": [
-            {
-                "officer": "District Collector (Sitapur)",
-                "date": "2026-09-12 12:05",
-                "remark": "Flagged as high-urgency maternal deficit. CMO directed to submit CHC staffing and trauma audit within 48 hours."
-            }
-        ]
-    },
-    {
-        "tracking_id": "JAN-2026-UP-84220",
-        "name": "Savitri Devi",
-        "phone": "+91 94512 88341",
-        "state": "Uttar Pradesh",
-        "district": "Sitapur",
-        "village_or_ward": "Maholi Tehsil, Ward 4",
-        "category": "Drinking Water",
-        "urgency": "HIGH",
-        "description": "Jal Jeevan Mission overhead tank pipeline ruptured 3 weeks ago. Wastewater contamination has caused 24 cases of acute diarrhea in the primary school.",
-        "status": "FIELD_AUDIT_SCHEDULED",
-        "department": "Jal Nigam & Rural Water Sanitation",
-        "timestamp": "2026-09-12 10:15",
-        "official_remarks": [
-            {
-                "officer": "Executive Engineer (Jal Nigam)",
-                "date": "2026-09-12 11:30",
-                "remark": "Site inspection scheduled for 13th Sept morning. Alternative tanker deployment ordered."
-            }
-        ]
     },
     {
         "tracking_id": "JAN-2026-OR-84218",
@@ -199,20 +169,11 @@ CITIZEN_GRIEVANCES = [
         "phone": "+91 91234 56789",
         "state": "Odisha",
         "district": "Koraput",
-        "village_or_ward": "Semiliguda Block, Doliamba Hamlet",
         "category": "Drinking Water",
         "urgency": "HIGH",
-        "description": "Piped drinking water has stopped in 3 tribal hamlets since last month. Borewell water is yellow with high fluoride and causing stomach illness among children.",
+        "description": "Piped drinking water has stopped in 3 tribal hamlets since last month. Borewell water is yellow and causing stomach illness.",
         "status": "UNDER_REVIEW",
-        "department": "Rural Water Supply & Sanitation (RWSS)",
         "timestamp": "2026-09-12 09:45",
-        "official_remarks": [
-            {
-                "officer": "District Collector (Koraput)",
-                "date": "2026-09-12 10:40",
-                "remark": "Referred to Koraput Gravity Filtration Project sanction committee."
-            }
-        ]
     },
     {
         "tracking_id": "JAN-2026-RJ-84217",
@@ -220,20 +181,11 @@ CITIZEN_GRIEVANCES = [
         "phone": "+91 99887 76655",
         "state": "Rajasthan",
         "district": "Barmer",
-        "village_or_ward": "Chohtan Tehsil, Sedwa Border Post",
         "category": "Electricity & Solar",
         "urgency": "MODERATE",
-        "description": "Frequent power outages of 14 hours daily ruining cumin crops and tube-well operations. Requesting decentralized solar feeder setup.",
-        "status": "ACTION_APPROVED",
-        "department": "Jodhpur Vidyut Vitran Nigam & RREC",
+        "description": "Frequent power outages of 14 hours daily ruining crops and water pumps. Requesting solar feeder setup.",
+        "status": "RECORDED",
         "timestamp": "2026-09-11 16:30",
-        "official_remarks": [
-            {
-                "officer": "State Energy Planner",
-                "date": "2026-09-12 09:10",
-                "remark": "Included in PM-KUSUM Component C solar feeder microgrid priority allocation."
-            }
-        ]
     },
     {
         "tracking_id": "JAN-2026-BR-84216",
@@ -241,41 +193,11 @@ CITIZEN_GRIEVANCES = [
         "phone": "+91 97712 34567",
         "state": "Bihar",
         "district": "Purnia",
-        "village_or_ward": "Baisi Block, Malharia Ghat",
         "category": "Roads & Bridges",
         "urgency": "HIGH",
-        "description": "Mahananda river flood washed away wooden culvert bridge on main block road. Over 4,000 villagers completely cut off from district hospital and market.",
-        "status": "FIELD_AUDIT_SCHEDULED",
-        "department": "Rural Works Department (RWD)",
+        "description": "Flood washed away culvert bridge on main block road. Over 4,000 villagers cannot reach hospital or market.",
+        "status": "FIELD_AUDIT_REQUESTED",
         "timestamp": "2026-09-11 14:15",
-        "official_remarks": [
-            {
-                "officer": "District Magistrate (Purnia)",
-                "date": "2026-09-11 17:00",
-                "remark": "Temporary pontoon bridge deployed. Raised embankment proposal forwarded for PMGSY allocation."
-            }
-        ]
-    },
-    {
-        "tracking_id": "JAN-2026-KL-84215",
-        "name": "Ananya Nair",
-        "phone": "+91 94471 20045",
-        "state": "Kerala",
-        "district": "Wayanad",
-        "village_or_ward": "Meppadi Panchayat, Chooralmala Ward",
-        "category": "Roads & Bridges",
-        "urgency": "CRITICAL",
-        "description": "Landslide prone hillside road has visible cracks after torrential rain. School bus route operates on this ridge with immense safety risk.",
-        "status": "UNDER_REVIEW",
-        "department": "Public Works Department (PWD Roads)",
-        "timestamp": "2026-09-11 11:00",
-        "official_remarks": [
-            {
-                "officer": "District Collector (Wayanad)",
-                "date": "2026-09-11 12:15",
-                "remark": "Geotechnical team dispatched for retaining wall assessment; heavy vehicles diverted."
-            }
-        ]
     },
 ]
 
@@ -298,19 +220,9 @@ STATE_CODES = {
 }
 
 
-def add_citizen_grievance(
-    name: str,
-    state: str,
-    district: str,
-    category: str,
-    description: str,
-    phone: str = "",
-    village_or_ward: str = "",
-    urgency: str = "MODERATE"
-):
+def add_citizen_grievance(name: str, state: str, district: str, category: str, description: str, phone: str = "", urgency: str = "MODERATE"):
     """
     Records a new citizen grievance and returns the created record with Tracking ID.
-    Supports complete location tracking (village / ward / tehsil).
     Zero external API key required.
     """
     import random
@@ -326,25 +238,16 @@ def add_citizen_grievance(
         "phone": phone.strip() if phone else "Not provided",
         "state": state.strip(),
         "district": district.strip(),
-        "village_or_ward": village_or_ward.strip() if village_or_ward else f"{district.strip()} Rural Area",
         "category": category.strip(),
         "urgency": urgency.strip().upper(),
         "description": description.strip(),
         "status": "UNDER_REVIEW",
-        "department": f"District {category.strip()} Administration",
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "official_remarks": [
-            {
-                "officer": "System Dispatcher",
-                "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
-            }
-        ]
     }
 
     CITIZEN_GRIEVANCES.insert(0, new_record)
 
-    # Increment request counter in matching hotspot if applicable
+    # Increment request counter in Sitapur or matching hotspot if applicable
     for h in HOTSPOTS:
         if state_code in h.get("region_name", "") or state in h.get("region_name", ""):
             h["citizen_requests"] = h.get("citizen_requests", 0) + 1
@@ -353,68 +256,6 @@ def add_citizen_grievance(
     return new_record
 
 
-def update_citizen_grievance_status(
-    tracking_id: str,
-    new_status: str,
-    remark: str = "",
-    officer: str = "District Collector"
-):
-    """
-    Updates the administrative status and appends official remarks to a grievance.
-    Used by District Collectors and Policy Makers.
-    """
-    from datetime import datetime
-
-    tracking_id_clean = tracking_id.strip().upper()
-    record = next((g for g in CITIZEN_GRIEVANCES if g["tracking_id"].upper() == tracking_id_clean), None)
-    if not record:
-        return None
-
-    record["status"] = new_status.strip().upper()
-
-    if remark:
-        if "official_remarks" not in record:
-            record["official_remarks"] = []
-        record["official_remarks"].insert(0, {
-            "officer": officer.strip(),
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "remark": remark.strip(),
-        })
-
-    return record
-
-
-def get_citizen_grievances(
-    district: str = None,
-    state: str = None,
-    category: str = None,
-    urgency: str = None,
-    status: str = None
-):
-    """
-    Returns filtered list of citizen grievances based on official oversight criteria.
-    """
-    results = CITIZEN_GRIEVANCES
-
-    if district and district.strip().lower() not in ["all", "all districts", ""]:
-        d_lower = district.strip().lower()
-        results = [g for g in results if d_lower in g.get("district", "").lower()]
-
-    if state and state.strip().lower() not in ["all", "all india", ""]:
-        s_lower = state.strip().lower()
-        results = [g for g in results if s_lower in g.get("state", "").lower()]
-
-    if category and category.strip().lower() not in ["all", "all categories", ""]:
-        c_lower = category.strip().lower()
-        results = [g for g in results if c_lower in g.get("category", "").lower()]
-
-    if urgency and urgency.strip().lower() not in ["all", "all urgencies", ""]:
-        u_upper = urgency.strip().upper()
-        results = [g for g in results if g.get("urgency", "").upper() == u_upper]
-
-    if status and status.strip().lower() not in ["all", "all statuses", ""]:
-        st_upper = status.strip().upper()
-        results = [g for g in results if g.get("status", "").upper() == st_upper]
-
-    return results
+def get_citizen_grievances():
+    return CITIZEN_GRIEVANCES
 
