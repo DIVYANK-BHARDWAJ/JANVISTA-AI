@@ -176,6 +176,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const pipelineStagesSection = document.getElementById("pipelineStagesSection");
   const grievancesSection = document.getElementById("grievances-section");
 
+  const statePlannerJurisdictionBar = document.getElementById("statePlannerJurisdictionBar");
+  const statePlannerActiveStateName = document.getElementById("statePlannerActiveStateName");
+  const statePlannerDistrictsSubtitle = document.getElementById("statePlannerDistrictsSubtitle");
+  const statePlannerDropdown = document.getElementById("statePlannerDropdown");
+  const btnApplyStatePlanner = document.getElementById("btnApplyStatePlanner");
+  const btnSwitchToPlanner = document.getElementById("btnSwitchToPlanner");
+
   function applyRoleView(roleName) {
     currentActiveRole = roleName;
     if (currentRoleLabel) currentRoleLabel.textContent = roleName;
@@ -266,37 +273,98 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (roleName === "District Collector") {
         // District Collector Persona Mode - FULL OVERSIGHT
+        if (statePlannerJurisdictionBar) statePlannerJurisdictionBar.classList.add("d-none");
+
         if (roleBadge) {
-          roleBadge.className = "badge bg-success text-white text-uppercase fs-8 px-2.5 py-1 fw-bold";
-          roleBadge.textContent = "ROLE: DISTRICT COLLECTOR (DISTRICT LEVEL)";
+          if (currentOfficerSession && currentOfficerSession.role === "district_collector") {
+            roleBadge.className = "badge bg-success text-white text-uppercase fs-8 px-2.5 py-1 fw-bold shadow-sm";
+            roleBadge.innerHTML = `<i class="bi bi-patch-check-fill me-1"></i> VERIFIED: ${currentOfficerSession.display_name.toUpperCase()}`;
+          } else {
+            roleBadge.className = "badge bg-success text-white text-uppercase fs-8 px-2.5 py-1 fw-bold";
+            roleBadge.textContent = "ROLE: DISTRICT COLLECTOR (DISTRICT LEVEL)";
+          }
         }
-        if (roleJurisdiction) roleJurisdiction.innerHTML = '<i class="bi bi-geo-alt me-1"></i>District Collectorate & Field Jurisdiction';
-        if (roleDescription) roleDescription.textContent = "District executive oversight: inspect complete citizen grievances, dispatch field audit teams, schedule on-site verification, and allocate urgent district remediation.";
+        if (roleJurisdiction) {
+          if (currentOfficerSession && currentOfficerSession.role === "district_collector") {
+            roleJurisdiction.innerHTML = `<i class="bi bi-geo-alt-fill text-success me-1"></i>${currentOfficerSession.jurisdiction} • Authenticated Collectorate`;
+          } else {
+            roleJurisdiction.innerHTML = '<i class="bi bi-geo-alt me-1"></i>District Collectorate & Field Jurisdiction';
+          }
+        }
+        if (roleDescription) {
+          if (currentOfficerSession && currentOfficerSession.role === "district_collector") {
+            roleDescription.textContent = `Official executive authority active for ${currentOfficerSession.district}, ${currentOfficerSession.state}. Filtered citizen grievances and field directives enabled.`;
+          } else {
+            roleDescription.textContent = "District executive oversight: inspect complete citizen grievances, dispatch field audit teams, schedule on-site verification, and allocate urgent district remediation.";
+          }
+        }
         if (roleIconBox) roleIconBox.className = "rounded-circle p-2.5 bg-success bg-opacity-20 text-success border border-success border-opacity-30";
         if (roleIcon) roleIcon.className = "bi bi-geo-alt fs-4";
 
-        if (modalActionOfficer) modalActionOfficer.value = "District Collector";
+        if (modalActionOfficer) {
+          modalActionOfficer.value = (currentOfficerSession && currentOfficerSession.role === "district_collector")
+            ? currentOfficerSession.display_name
+            : "District Collector";
+        }
 
-        // Load grievances across all districts for the collector's jurisdiction
+        if (currentOfficerSession && currentOfficerSession.role === "district_collector") {
+          loadDashboardForState(currentOfficerSession.state);
+        } else {
+          loadDashboardForState("National");
+        }
         loadGrievances();
 
         showToast('<i class="bi bi-geo-alt-fill me-1 text-success"></i> Switched to <strong>District Collector View</strong>. Public citizen grievance ledger unlocked for executive oversight.');
       } else if (roleName === "State Planner") {
-        // State Planner Persona Mode
-        if (roleBadge) {
-          roleBadge.className = "badge bg-warning-subtle text-warning-emphasis border border-warning-subtle text-uppercase fs-8 px-2.5 py-1 fw-bold";
-          roleBadge.textContent = "ROLE: STATE PLANNER";
+        // State Planner Persona Mode - RESPECTIVE STATE JURISDICTION
+        if (statePlannerJurisdictionBar) statePlannerJurisdictionBar.classList.remove("d-none");
+
+        let targetState = "Jharkhand";
+        if (currentOfficerSession && currentOfficerSession.role === "state_planner") {
+          targetState = currentOfficerSession.state;
+        } else if (statePlannerDropdown && statePlannerDropdown.value) {
+          targetState = statePlannerDropdown.value;
         }
-        if (roleJurisdiction) roleJurisdiction.innerHTML = '<i class="bi bi-diagram-3 me-1"></i>State Planning Commission & Inter-District Allocation';
-        if (roleDescription) roleDescription.textContent = "State-level capital coordination: analyzing multi-district demand patterns, pipeline readiness, and regional asset deficits.";
+
+        if (statePlannerDropdown) {
+          statePlannerDropdown.value = targetState;
+        }
+
+        if (roleBadge) {
+          if (currentOfficerSession && currentOfficerSession.role === "state_planner") {
+            roleBadge.className = "badge bg-warning text-dark text-uppercase fs-8 px-2.5 py-1 fw-bold shadow-sm";
+            roleBadge.innerHTML = `<i class="bi bi-patch-check-fill me-1"></i> VERIFIED: ${currentOfficerSession.display_name.toUpperCase()}`;
+          } else {
+            roleBadge.className = "badge bg-warning text-dark text-uppercase fs-8 px-2.5 py-1 fw-bold shadow-sm";
+            roleBadge.innerHTML = `<i class="bi bi-diagram-3-fill me-1"></i> STATE PLANNER: ${targetState.toUpperCase()}`;
+          }
+        }
+        if (roleJurisdiction) {
+          if (currentOfficerSession && currentOfficerSession.role === "state_planner") {
+            roleJurisdiction.innerHTML = `<i class="bi bi-diagram-3-fill text-warning me-1"></i>${currentOfficerSession.state} Planning Commission • Authenticated Planner`;
+          } else {
+            roleJurisdiction.innerHTML = `<i class="bi bi-diagram-3 me-1"></i>${targetState} State Planning Commission • Active Jurisdiction`;
+          }
+        }
+        if (roleDescription) {
+          roleDescription.textContent = `State-level capital coordination active for ${targetState}. Analyzing multi-district demand patterns, pipeline readiness, and regional asset deficits.`;
+        }
         if (roleIconBox) roleIconBox.className = "rounded-circle p-2.5 bg-warning bg-opacity-20 text-warning border border-warning border-opacity-30";
         if (roleIcon) roleIcon.className = "bi bi-diagram-3 fs-4";
 
-        if (modalActionOfficer) modalActionOfficer.value = "State Infrastructure Planner";
+        if (modalActionOfficer) {
+          modalActionOfficer.value = (currentOfficerSession && currentOfficerSession.role === "state_planner")
+            ? currentOfficerSession.display_name
+            : `State Infrastructure Planner (${targetState})`;
+        }
+
+        loadDashboardForState(targetState);
         loadGrievances();
-        showToast('<i class="bi bi-diagram-3-fill me-1 text-warning"></i> Switched to <strong>State Planner View</strong>.');
+        showToast(`<i class="bi bi-diagram-3-fill me-1 text-warning"></i> Switched to <strong>State Planner View (${targetState})</strong>.`);
       } else {
         // Policymaker (National) Persona Mode - FULL NATIONAL OVERSIGHT
+        if (statePlannerJurisdictionBar) statePlannerJurisdictionBar.classList.add("d-none");
+
         if (roleBadge) {
           roleBadge.className = "badge bg-primary text-white text-uppercase fs-8 px-2.5 py-1 fw-bold";
           roleBadge.textContent = "ROLE: POLICYMAKER (NATIONAL)";
@@ -312,6 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (filterDistrict && filterDistrict.value !== "All") {
           filterDistrict.value = "All";
         }
+        loadDashboardForState("National");
         loadGrievances();
 
         showToast('<i class="bi bi-shield-check me-1 text-primary"></i> Switched to <strong>Policymaker (National) View</strong>.');
@@ -323,9 +392,37 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".role-option").forEach((opt) => {
     opt.addEventListener("click", (e) => {
       e.preventDefault();
-      applyRoleView(opt.dataset.role);
+      const targetRole = opt.dataset.role;
+
+      // District Collector / State Planner require officer authentication.
+      // Route to the login page (State/District + password) instead of
+      // switching the view directly, unless already logged in for that role.
+      if (targetRole === "District Collector" && (!currentOfficerSession || currentOfficerSession.role !== "district_collector")) {
+        openOfficerLoginFor("district_collector");
+        return;
+      }
+      if (targetRole === "State Planner" && (!currentOfficerSession || currentOfficerSession.role !== "state_planner")) {
+        openOfficerLoginFor("state_planner");
+        return;
+      }
+
+      applyRoleView(targetRole);
     });
   });
+
+  // Opens the Officer Login modal pre-set to the given role (district_collector / state_planner)
+  function openOfficerLoginFor(role) {
+    const loginRoleSelect = document.getElementById("loginRoleSelect");
+    if (loginRoleSelect) {
+      loginRoleSelect.value = role;
+      loginRoleSelect.dispatchEvent(new Event("change"));
+    }
+    const officerModalEl = document.getElementById("officerLoginModal");
+    if (officerModalEl && typeof bootstrap !== "undefined") {
+      const modalInstance = bootstrap.Modal.getOrCreateInstance(officerModalEl);
+      modalInstance.show();
+    }
+  }
 
   // Quick switch buttons on banner
   const btnSwitchToCitizen = document.getElementById("btnSwitchToCitizen");
@@ -335,12 +432,234 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const btnSwitchToCollector = document.getElementById("btnSwitchToCollector");
   if (btnSwitchToCollector) {
-    btnSwitchToCollector.addEventListener("click", () => applyRoleView("District Collector"));
+    btnSwitchToCollector.addEventListener("click", () => {
+      if (!currentOfficerSession || currentOfficerSession.role !== "district_collector") {
+        // Not authenticated as a District Collector yet — open the login page
+        // (asks which District and password) instead of switching the view.
+        openOfficerLoginFor("district_collector");
+        return;
+      }
+      applyRoleView("District Collector");
+    });
+  }
+
+  // Quick Switch to State Planner
+  if (btnSwitchToPlanner) {
+    btnSwitchToPlanner.addEventListener("click", () => {
+      if (!currentOfficerSession || currentOfficerSession.role !== "state_planner") {
+        // Not authenticated as a State Planner yet — open the login page
+        // (asks which State and password) instead of switching the view.
+        openOfficerLoginFor("state_planner");
+        return;
+      }
+      applyRoleView("State Planner");
+    });
+  }
+
+  // State Planner Respective State Switcher Handlers
+  if (statePlannerDropdown) {
+    statePlannerDropdown.addEventListener("change", () => {
+      const selectedState = statePlannerDropdown.value;
+      if (selectedState) {
+        loadDashboardForState(selectedState);
+        if (currentActiveRole === "State Planner") {
+          if (roleBadge && (!currentOfficerSession || currentOfficerSession.role !== "state_planner")) {
+            roleBadge.innerHTML = `<i class="bi bi-diagram-3-fill me-1"></i> STATE PLANNER: ${selectedState.toUpperCase()}`;
+          }
+          if (roleJurisdiction) {
+            roleJurisdiction.innerHTML = `<i class="bi bi-diagram-3-fill text-warning me-1"></i>${selectedState} State Planning Commission • Active Jurisdiction`;
+          }
+          if (roleDescription) {
+            roleDescription.textContent = `State-level capital coordination active for ${selectedState}. Analyzing multi-district demand patterns, pipeline readiness, and regional asset deficits.`;
+          }
+        }
+        loadGrievances();
+        showToast(`<i class="bi bi-diagram-3-fill me-1 text-warning"></i> State Planner active jurisdiction updated to <strong>${selectedState}</strong>`);
+      }
+    });
+  }
+
+  if (btnApplyStatePlanner) {
+    btnApplyStatePlanner.addEventListener("click", () => {
+      const selectedState = statePlannerDropdown ? statePlannerDropdown.value : "Jharkhand";
+      loadDashboardForState(selectedState);
+      loadGrievances();
+      showToast(`<i class="bi bi-arrow-repeat me-1 text-warning"></i> Loaded State Decision Support for <strong>${selectedState}</strong>`);
+    });
   }
 
   const btnSwitchToPolicymaker = document.getElementById("btnSwitchToPolicymaker");
   if (btnSwitchToPolicymaker) {
     btnSwitchToPolicymaker.addEventListener("click", () => applyRoleView("Policymaker"));
+  }
+
+  // =========================================================================
+  // STATE-AWARE DASHBOARD LOADER (Respective States & National Scope)
+  // =========================================================================
+  async function loadDashboardForState(stateName) {
+    const isNational = !stateName || stateName.toLowerCase() === "national" || stateName.toLowerCase() === "all" || stateName.toLowerCase() === "all india";
+    const url = isNational ? "/api/dashboard/overview" : `/api/dashboard/overview?state=${encodeURIComponent(stateName)}`;
+
+    try {
+      const res = await fetch(url);
+      const json = await res.json();
+      if (!json.success || !json.data) return;
+
+      const data = json.data;
+
+      // 1. Update State Planner Jurisdiction Bar
+      if (statePlannerActiveStateName) {
+        statePlannerActiveStateName.textContent = isNational
+          ? "National Planning Commission Decision Support"
+          : `${data.state} State Planning Commission`;
+      }
+      if (statePlannerDistrictsSubtitle) {
+        statePlannerDistrictsSubtitle.textContent = isNational
+          ? "Cross-state capital allocation, inter-regional priority weighting, and national grievance aggregation."
+          : `Analyzing ${data.total_districts || 'all'} districts across ${data.state}: inter-district demand patterns, pipeline readiness, and regional asset deficits.`;
+      }
+      if (statePlannerDropdown && !isNational && statePlannerDropdown.value !== data.state) {
+        statePlannerDropdown.value = data.state;
+      }
+
+      // 2. Update Header Banner
+      const mainBannerTitle = document.getElementById("mainBannerTitle");
+      const mainBannerSubtitle = document.getElementById("mainBannerSubtitle");
+      const mainBannerBadge = document.getElementById("mainBannerBadge");
+      if (mainBannerTitle && data.banner?.title) {
+        mainBannerTitle.textContent = data.banner.title;
+      }
+      if (mainBannerSubtitle && data.banner?.subtitle) {
+        mainBannerSubtitle.textContent = data.banner.subtitle;
+      }
+      if (mainBannerBadge && data.banner?.data_classification) {
+        mainBannerBadge.innerHTML = `<i class="bi bi-database-check me-1"></i> ${data.banner.data_classification.replace(/_/g, ' ')}`;
+      }
+
+      // 3. Update 5 KPI Cards
+      if (data.kpis && data.kpis.length >= 5) {
+        const [k1, k2, k3, k4, k5] = data.kpis;
+        const kpiRequestsVal = document.getElementById("kpi-requests-value");
+        const kpiRequestsSub = document.getElementById("kpi-requests-sub");
+        if (kpiRequestsVal) kpiRequestsVal.textContent = k1.value;
+        if (kpiRequestsSub) kpiRequestsSub.textContent = k1.subtitle;
+
+        const kpiClustersVal = document.getElementById("kpi-clusters-value");
+        const kpiClustersSub = document.getElementById("kpi-clusters-sub");
+        if (kpiClustersVal) kpiClustersVal.textContent = k2.value;
+        if (kpiClustersSub) kpiClustersSub.textContent = k2.subtitle;
+
+        const kpiHotspotsVal = document.getElementById("kpi-hotspots-value");
+        const kpiHotspotsSub = document.getElementById("kpi-hotspots-sub");
+        if (kpiHotspotsVal) kpiHotspotsVal.textContent = k3.value;
+        if (kpiHotspotsSub) kpiHotspotsSub.textContent = k3.subtitle;
+
+        const kpiGapVal = document.getElementById("kpi-gap-value");
+        const kpiGapSub = document.getElementById("kpi-gap-sub");
+        if (kpiGapVal) kpiGapVal.textContent = k4.value;
+        if (kpiGapSub) kpiGapSub.textContent = k4.subtitle;
+
+        const kpiPriorityVal = document.getElementById("kpi-priority-value");
+        const kpiPrioritySub = document.getElementById("kpi-priority-sub");
+        if (kpiPriorityVal) kpiPriorityVal.textContent = k5.value;
+        if (kpiPrioritySub) kpiPrioritySub.textContent = k5.subtitle;
+      }
+
+      // 4. Update Spotlight Recommendation
+      if (data.spotlight) {
+        const spot = data.spotlight;
+        const spotlightUrgency = document.getElementById("spotlightUrgency");
+        const spotlightCategory = document.getElementById("spotlightCategory");
+        const spotlightRegion = document.getElementById("spotlightRegion");
+        const spotlightTitle = document.getElementById("spotlightTitle");
+        const spotlightDesc = document.getElementById("spotlightDesc");
+
+        if (spotlightUrgency) spotlightUrgency.textContent = spot.urgency_tier || spot.urgency || "CRITICAL DEFICIT";
+        if (spotlightCategory) spotlightCategory.textContent = spot.category || spot.sector || "Infrastructure";
+        if (spotlightRegion) spotlightRegion.textContent = spot.region_name || `${spot.district || ''}, ${data.state || ''}`;
+        if (spotlightTitle) spotlightTitle.textContent = spot.title;
+        if (spotlightDesc) spotlightDesc.textContent = spot.description;
+
+        // Capex and impact metrics
+        const capexVal = spot.estimated_cost_cr || spot.estimated_capex;
+        if (capexVal) {
+          const capexEl = document.querySelector("#spotlight-section .bg-slate-100 .col-6:nth-child(1) .fs-6");
+          if (capexEl) capexEl.textContent = `₹${capexVal} Cr`;
+        }
+        const popVal = spot.impacted_population || spot.population_impact;
+        if (popVal) {
+          const popEl = document.querySelector("#spotlight-section .bg-slate-100 .col-6:nth-child(2) .fs-6");
+          if (popEl) popEl.textContent = Number(popVal).toLocaleString();
+        }
+
+        // Priority Score badge in explainability breakdown
+        const scoreBadge = document.querySelector("#spotlight-section .badge.bg-emerald-subtle");
+        if (scoreBadge && spot.priority_score) {
+          scoreBadge.textContent = `Score: ${spot.priority_score} / 100`;
+        }
+      }
+
+      // 5. Update Ranked Hotspots Table
+      if (data.hotspots && Array.isArray(data.hotspots)) {
+        const tbody = document.getElementById("hotspotsTableBody");
+        if (tbody) {
+          tbody.innerHTML = data.hotspots.map((h, idx) => {
+            const rankBadge = idx === 0
+              ? '<span class="badge bg-danger text-white rounded-circle p-1.5 fs-8">#1</span>'
+              : (idx === 1
+                ? '<span class="badge bg-warning-subtle text-warning-emphasis rounded-circle p-1.5 fs-8">#2</span>'
+                : `<span class="badge bg-secondary-subtle text-secondary rounded-circle p-1.5 fs-8">#${idx + 1}</span>`);
+
+            const distLabel = h.district ? `${h.district} District` : h.region_name;
+            const stateLabel = data.state || h.state || "India";
+
+            return `
+              <tr>
+                <td class="ps-4">
+                  <div class="d-flex align-items-center gap-2">
+                    ${rankBadge}
+                    <div>
+                      <div class="fw-bold text-slate-900">${distLabel}</div>
+                      <div class="text-secondary fs-8">${stateLabel}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">${h.category}</span></td>
+                <td><strong class="${h.gap_index >= 85 ? 'text-danger' : 'text-warning-emphasis'}">${h.gap_index} %</strong></td>
+                <td><span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-bold">${h.priority_score} / 100</span></td>
+                <td>${(h.citizen_requests || 0).toLocaleString()} requests</td>
+                <td class="text-end pe-4">
+                  <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fs-8 fw-semibold" onclick="selectHotspot(${idx})">
+                    Details
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join("");
+        }
+      }
+
+      // 6. Update District Filter Dropdown options in Grievance section
+      const filterDistrict = document.getElementById("filterDistrict");
+      if (filterDistrict && data.hotspots && Array.isArray(data.hotspots)) {
+        const currentVal = filterDistrict.value;
+        let optHtml = isNational
+          ? '<option value="All">All Districts (National)</option>'
+          : `<option value="All">All Districts (${data.state})</option>`;
+
+        data.hotspots.forEach((h) => {
+          const dName = h.district || h.region_name.split(" ")[0];
+          optHtml += `<option value="${dName}">${dName} District</option>`;
+        });
+        filterDistrict.innerHTML = optHtml;
+        if (currentVal && filterDistrict.querySelector(`option[value="${currentVal}"]`)) {
+          filterDistrict.value = currentVal;
+        }
+      }
+
+    } catch (err) {
+      console.error("Failed to load dashboard for state:", err);
+    }
   }
 
   // =========================================================================
@@ -357,12 +676,29 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadGrievances() {
     if (!grievancesTableBody) return;
 
-    const district = filterDistrict ? filterDistrict.value : "All";
+    let district = filterDistrict ? filterDistrict.value : "All";
     const urgency = filterUrgency ? filterUrgency.value : "All";
     const category = filterCategory ? filterCategory.value : "All";
 
     const params = new URLSearchParams();
-    if (district && district !== "All") params.append("district", district);
+
+    // If an officer is authenticated, scope grievances to their jurisdiction
+    if (currentOfficerSession) {
+      if (currentOfficerSession.role === "district_collector") {
+        params.append("district", currentOfficerSession.district);
+        params.append("state", currentOfficerSession.state);
+      } else if (currentOfficerSession.role === "state_planner") {
+        params.append("state", currentOfficerSession.state);
+        if (district && district !== "All") params.append("district", district);
+      }
+    } else if (currentActiveRole === "State Planner") {
+      const state = statePlannerDropdown ? statePlannerDropdown.value : "Jharkhand";
+      if (state) params.append("state", state);
+      if (district && district !== "All") params.append("district", district);
+    } else {
+      if (district && district !== "All") params.append("district", district);
+    }
+
     if (urgency && urgency !== "All") params.append("urgency", urgency);
     if (category && category !== "All") params.append("category", category);
 
@@ -978,15 +1314,505 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // =========================================================================
+  // OFFICIAL GOVERNANCE AUTHENTICATION & DIRECTORY (28 STATES & 8 UTs)
+  // =========================================================================
+  let currentOfficerSession = null;
+  let allStatesHierarchy = [];
+
+  const officerSessionCapsule = document.getElementById("officerSessionCapsule");
+  const officerSessionName = document.getElementById("officerSessionName");
+  const officerSessionJurisdiction = document.getElementById("officerSessionJurisdiction");
+  const btnOfficerLogout = document.getElementById("btnOfficerLogout");
+  const btnOpenOfficerLogin = document.getElementById("btnOpenOfficerLogin");
+
+  const loginStateSelect = document.getElementById("loginStateSelect");
+  const loginRoleSelect = document.getElementById("loginRoleSelect");
+  const loginDistrictContainer = document.getElementById("loginDistrictContainer");
+  const loginDistrictSelect = document.getElementById("loginDistrictSelect");
+  const districtCountHint = document.getElementById("districtCountHint");
+  const loginStatePlannerUtNote = document.getElementById("loginStatePlannerUtNote");
+
+  const previewJurisdictionLabel = document.getElementById("previewJurisdictionLabel");
+  const previewUsername = document.getElementById("previewUsername");
+  const interactiveLoginPassword = document.getElementById("interactiveLoginPassword");
+  const btnToggleInteractivePasswordVisibility = document.getElementById("btnToggleInteractivePasswordVisibility");
+  const interactiveLoginForm = document.getElementById("interactiveLoginForm");
+  const btnSubmitInteractiveLogin = document.getElementById("btnSubmitInteractiveLogin");
+  const loginFeedbackAlert = document.getElementById("loginFeedbackAlert");
+
+  const btnSwitchToDirectoryModal = document.getElementById("btnSwitchToDirectoryModal");
+  const dirSearchInput = document.getElementById("dirSearchInput");
+  const dirStateFilter = document.getElementById("dirStateFilter");
+  const dirRoleFilter = document.getElementById("dirRoleFilter");
+  const dirTableBody = document.getElementById("dirTableBody");
+  const dirCountLabel = document.getElementById("dirCountLabel");
+
+  // Load all-India hierarchy from backend
+  async function loadStatesHierarchy() {
+    try {
+      const res = await fetch("/api/auth/hierarchy");
+      const json = await res.json();
+      if (json.success && json.data) {
+        allStatesHierarchy = json.data;
+
+        // Populate State Dropdown in Login Modal — filtered by the currently selected role
+        // (State Planner is not applicable for centrally-administered UTs).
+        populateLoginStateOptions(loginRoleSelect ? loginRoleSelect.value : "district_collector");
+
+        if (dirStateFilter) {
+          dirStateFilter.innerHTML = '<option value="ALL">All 36 States & Union Territories</option>';
+          allStatesHierarchy.forEach((s) => {
+            const opt = document.createElement("option");
+            opt.value = s.state;
+            opt.textContent = `${s.state} (${s.is_ut ? 'UT' : 'State'})`;
+            dirStateFilter.appendChild(opt);
+          });
+        }
+
+        // Populate State Planner Jurisdiction Dropdown — only States/UTs where
+        // the State Planner role is applicable (excludes centrally-administered
+        // UTs with no elected state government).
+        if (statePlannerDropdown) {
+          statePlannerDropdown.innerHTML = "";
+          allStatesHierarchy.filter((s) => s.state_planner_allowed !== false).forEach((s) => {
+            const opt = document.createElement("option");
+            opt.value = s.state;
+            opt.textContent = `${s.state} (${s.is_ut ? 'UT' : 'State'} • ${s.total_districts} Districts)`;
+            statePlannerDropdown.appendChild(opt);
+          });
+          if (currentOfficerSession && currentOfficerSession.state) {
+            statePlannerDropdown.value = currentOfficerSession.state;
+          } else {
+            statePlannerDropdown.value = "Jharkhand";
+          }
+        }
+
+        updateInteractiveLoginPreview();
+        renderDirectoryTable();
+      }
+    } catch (err) {
+      console.error("Failed to load official hierarchy:", err);
+    }
+  }
+
+  // Populate the State/UT dropdown in the login modal, filtered by role.
+  // State Planner is not applicable for centrally-administered Union
+  // Territories (they have no elected state government) — only Delhi,
+  // Jammu & Kashmir, and Puducherry have their own legislature among the UTs.
+  function populateLoginStateOptions(role) {
+    if (!loginStateSelect || !allStatesHierarchy.length) return;
+
+    const prevSelected = loginStateSelect.value;
+    const isPlannerRole = role !== "district_collector";
+    const eligibleStates = isPlannerRole
+      ? allStatesHierarchy.filter((s) => s.state_planner_allowed !== false)
+      : allStatesHierarchy;
+
+    loginStateSelect.innerHTML = "";
+    eligibleStates.forEach((s) => {
+      const opt = document.createElement("option");
+      opt.value = s.state;
+      opt.textContent = `${s.state} (${s.is_ut ? 'UT' : 'State'} • ${s.total_districts} Districts)`;
+      loginStateSelect.appendChild(opt);
+    });
+
+    if (eligibleStates.some((s) => s.state === prevSelected)) {
+      loginStateSelect.value = prevSelected;
+    } else {
+      const upExists = eligibleStates.some((s) => s.state === "Uttar Pradesh");
+      loginStateSelect.value = upExists ? "Uttar Pradesh" : (eligibleStates[0] ? eligibleStates[0].state : "");
+    }
+
+    // Note explaining why some UTs disappear when State Planner is selected
+    if (loginStatePlannerUtNote) {
+      loginStatePlannerUtNote.classList.toggle("d-none", !isPlannerRole);
+    }
+  }
+
+  // Update State/District interactive login card
+  function updateInteractiveLoginPreview() {
+    if (!allStatesHierarchy.length || !loginStateSelect) return;
+
+    const selectedStateName = loginStateSelect.value;
+    const selectedState = allStatesHierarchy.find((s) => s.state === selectedStateName) || allStatesHierarchy[0];
+    const role = loginRoleSelect ? loginRoleSelect.value : "district_collector";
+
+    if (role === "district_collector") {
+      if (loginDistrictContainer) loginDistrictContainer.classList.remove("d-none");
+      if (loginDistrictSelect) {
+        const prevSelectedDistrict = loginDistrictSelect.value;
+        loginDistrictSelect.innerHTML = "";
+        selectedState.districts.forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = d.district;
+          opt.textContent = d.district;
+          loginDistrictSelect.appendChild(opt);
+        });
+
+        // Retain selection if exists in new list, else select Sitapur if UP, or first district
+        if (selectedState.districts.some((d) => d.district === prevSelectedDistrict)) {
+          loginDistrictSelect.value = prevSelectedDistrict;
+        } else if (selectedState.state === "Uttar Pradesh" && selectedState.districts.some((d) => d.district === "Sitapur")) {
+          loginDistrictSelect.value = "Sitapur";
+        } else if (selectedState.districts.length > 0) {
+          loginDistrictSelect.value = selectedState.districts[0].district;
+        }
+
+        if (districtCountHint) {
+          districtCountHint.textContent = `${selectedState.total_districts} official districts in ${selectedState.state}`;
+        }
+      }
+
+      // Find current selected district object
+      const chosenDistName = loginDistrictSelect ? loginDistrictSelect.value : "";
+      const distObj = selectedState.districts.find((d) => d.district === chosenDistName) || selectedState.districts[0];
+
+      if (distObj) {
+        if (previewJurisdictionLabel) previewJurisdictionLabel.textContent = `${selectedState.state} • ${distObj.district} District`;
+        if (previewUsername) previewUsername.textContent = distObj.username;
+      }
+    } else {
+      // State Planner
+      if (loginDistrictContainer) loginDistrictContainer.classList.add("d-none");
+      const planner = selectedState.planner;
+      if (planner) {
+        if (previewJurisdictionLabel) {
+          previewJurisdictionLabel.textContent = `${selectedState.state} • Planning Commission HQ (${planner.headquarters || 'Capital'})`;
+        }
+        if (previewUsername) previewUsername.textContent = planner.username;
+      }
+    }
+  }
+
+  // Listeners for interactive picker
+  if (loginStateSelect) {
+    loginStateSelect.addEventListener("change", () => {
+      updateInteractiveLoginPreview();
+      if (interactiveLoginPassword) interactiveLoginPassword.value = "";
+      if (loginFeedbackAlert) loginFeedbackAlert.classList.add("d-none");
+    });
+  }
+  if (loginRoleSelect) {
+    loginRoleSelect.addEventListener("change", () => {
+      populateLoginStateOptions(loginRoleSelect.value);
+      updateInteractiveLoginPreview();
+      if (interactiveLoginPassword) interactiveLoginPassword.value = "";
+      if (loginFeedbackAlert) loginFeedbackAlert.classList.add("d-none");
+    });
+  }
+  if (loginDistrictSelect) {
+    loginDistrictSelect.addEventListener("change", () => {
+      updateInteractiveLoginPreview();
+      if (interactiveLoginPassword) interactiveLoginPassword.value = "";
+      if (loginFeedbackAlert) loginFeedbackAlert.classList.add("d-none");
+    });
+  }
+
+  // Password Show / Hide toggle button
+  if (btnToggleInteractivePasswordVisibility && interactiveLoginPassword) {
+    btnToggleInteractivePasswordVisibility.addEventListener("click", (e) => {
+      e.preventDefault();
+      const isPass = interactiveLoginPassword.type === "password";
+      interactiveLoginPassword.type = isPass ? "text" : "password";
+      btnToggleInteractivePasswordVisibility.innerHTML = isPass ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+      btnToggleInteractivePasswordVisibility.setAttribute("aria-label", isPass ? "Hide password" : "Show password");
+    });
+  }
+
+  // Centralized interactive login submission handler
+  async function handleInteractiveLoginSubmit(e) {
+    if (e) e.preventDefault();
+    const state = loginStateSelect ? loginStateSelect.value : "";
+    const role = loginRoleSelect ? loginRoleSelect.value : "district_collector";
+    const district = (role === "district_collector" && loginDistrictSelect) ? loginDistrictSelect.value : "";
+    const username = previewUsername ? previewUsername.textContent.trim() : "";
+    const password = interactiveLoginPassword ? interactiveLoginPassword.value.trim() : "";
+
+    if (!state) {
+      if (loginFeedbackAlert) {
+        loginFeedbackAlert.className = "alert alert-warning rounded-3 py-2 px-3 fs-8 mb-3";
+        loginFeedbackAlert.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Please select a State / Union Territory.';
+        loginFeedbackAlert.classList.remove("d-none");
+      }
+      if (loginStateSelect) loginStateSelect.focus();
+      return;
+    }
+
+    if (role === "district_collector" && !district) {
+      if (loginFeedbackAlert) {
+        loginFeedbackAlert.className = "alert alert-warning rounded-3 py-2 px-3 fs-8 mb-3";
+        loginFeedbackAlert.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Please select a District.';
+        loginFeedbackAlert.classList.remove("d-none");
+      }
+      if (loginDistrictSelect) loginDistrictSelect.focus();
+      return;
+    }
+
+    if (!password) {
+      if (loginFeedbackAlert) {
+        loginFeedbackAlert.className = "alert alert-warning rounded-3 py-2 px-3 fs-8 mb-3";
+        loginFeedbackAlert.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Please enter the official password / access key.';
+        loginFeedbackAlert.classList.remove("d-none");
+      }
+      if (interactiveLoginPassword) interactiveLoginPassword.focus();
+      return;
+    }
+
+    await executeOfficerLogin({ username, password, state, role, district });
+  }
+
+  // Bind submit to form and button
+  if (interactiveLoginForm) {
+    interactiveLoginForm.addEventListener("submit", handleInteractiveLoginSubmit);
+  }
+  if (btnSubmitInteractiveLogin) {
+    btnSubmitInteractiveLogin.addEventListener("click", handleInteractiveLoginSubmit);
+  }
+
+  // Switch from login modal to directory modal
+  if (btnSwitchToDirectoryModal) {
+    btnSwitchToDirectoryModal.addEventListener("click", () => {
+      const loginModalEl = document.getElementById("officerLoginModal");
+      if (loginModalEl && typeof bootstrap !== "undefined") {
+        const loginModal = bootstrap.Modal.getOrCreateInstance(loginModalEl);
+        if (loginModal) loginModal.hide();
+      }
+      const dirModalEl = document.getElementById("credentialsDirectoryModal");
+      if (dirModalEl && typeof bootstrap !== "undefined") {
+        const dirModal = bootstrap.Modal.getOrCreateInstance(dirModalEl);
+        dirModal.show();
+      }
+    });
+  }
+
+  // Centralized login executor
+  async function executeOfficerLogin(payload) {
+    if (loginFeedbackAlert) {
+      loginFeedbackAlert.className = "alert alert-info rounded-3 py-2 px-3 fs-8 mb-3";
+      loginFeedbackAlert.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Authenticating with National Governance Registry...';
+      loginFeedbackAlert.classList.remove("d-none");
+    }
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+
+      if (json.success && json.user) {
+        if (loginFeedbackAlert) {
+          loginFeedbackAlert.className = "alert alert-success rounded-3 py-2 px-3 fs-8 mb-3";
+          loginFeedbackAlert.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Success! Welcome, <strong>${json.user.display_name}</strong>.`;
+        }
+
+        setTimeout(() => {
+          setOfficerSession(json.user);
+
+          // Close active modals
+          const loginModalEl = document.getElementById("officerLoginModal");
+          if (loginModalEl && typeof bootstrap !== "undefined") {
+            const loginModal = bootstrap.Modal.getOrCreateInstance(loginModalEl);
+            if (loginModal) loginModal.hide();
+          }
+          const dirModalEl = document.getElementById("credentialsDirectoryModal");
+          if (dirModalEl && typeof bootstrap !== "undefined") {
+            const dirModal = bootstrap.Modal.getOrCreateInstance(dirModalEl);
+            if (dirModal) dirModal.hide();
+          }
+          if (loginFeedbackAlert) loginFeedbackAlert.classList.add("d-none");
+        }, 500);
+      } else {
+        if (loginFeedbackAlert) {
+          loginFeedbackAlert.className = "alert alert-danger rounded-3 py-2 px-3 fs-8 mb-3";
+          loginFeedbackAlert.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-1"></i> ${json.error || "Authentication failed. Check credentials."}`;
+        }
+      }
+    } catch (err) {
+      if (loginFeedbackAlert) {
+        loginFeedbackAlert.className = "alert alert-danger rounded-3 py-2 px-3 fs-8 mb-3";
+        loginFeedbackAlert.innerHTML = `<i class="bi bi-wifi-off me-1"></i> Network error during authentication. Please retry.`;
+      }
+    }
+  }
+
+  // Set active officer session in UI and storage
+  function setOfficerSession(user) {
+    currentOfficerSession = user;
+    try {
+      sessionStorage.setItem("janvista_officer", JSON.stringify(user));
+    } catch (e) { }
+
+    if (officerSessionCapsule) officerSessionCapsule.classList.remove("d-none");
+    if (btnOpenOfficerLogin) btnOpenOfficerLogin.classList.add("d-none");
+
+    if (officerSessionName) {
+      officerSessionName.textContent = user.role === "district_collector" ? `DC • ${user.district}` : `SP • ${user.state_code}`;
+    }
+    if (officerSessionJurisdiction) {
+      officerSessionJurisdiction.textContent = user.state;
+    }
+
+    // Apply proper role persona
+    if (user.role === "district_collector") {
+      applyRoleView("District Collector");
+    } else {
+      if (statePlannerDropdown) {
+        statePlannerDropdown.value = user.state;
+      }
+      applyRoleView("State Planner");
+    }
+
+    showToast(`<i class="bi bi-shield-check text-success me-1"></i> Verified Officer Session: <strong>${user.display_name}</strong>`);
+  }
+
+  // Log out officer
+  function clearOfficerSession() {
+    currentOfficerSession = null;
+    try {
+      sessionStorage.removeItem("janvista_officer");
+    } catch (e) { }
+
+    if (officerSessionCapsule) officerSessionCapsule.classList.add("d-none");
+    if (btnOpenOfficerLogin) btnOpenOfficerLogin.classList.remove("d-none");
+
+    if (statePlannerJurisdictionBar) {
+      statePlannerJurisdictionBar.classList.add("d-none");
+    }
+
+    applyRoleView("Policymaker");
+    showToast('<i class="bi bi-box-arrow-right text-info me-1"></i> Signed out from officer session.');
+  }
+
+  if (btnOfficerLogout) {
+    btnOfficerLogout.addEventListener("click", clearOfficerSession);
+  }
+
+  // Render All-India Credentials Directory Table
+  function renderDirectoryTable() {
+    if (!dirTableBody || !allStatesHierarchy.length) return;
+
+    const query = dirSearchInput ? dirSearchInput.value.trim().toLowerCase() : "";
+    const selectedState = dirStateFilter ? dirStateFilter.value : "ALL";
+    const selectedRole = dirRoleFilter ? dirRoleFilter.value : "ALL";
+
+    // Flatten all credentials
+    const rows = [];
+    allStatesHierarchy.forEach((s) => {
+      // Check state filter
+      if (selectedState !== "ALL" && s.state !== selectedState) return;
+
+      // State Planner record — skip for centrally-administered UTs with no
+      // state government (only Delhi, J&K, Puducherry have one among UTs).
+      if ((selectedRole === "ALL" || selectedRole === "state_planner") && s.state_planner_allowed !== false) {
+        rows.push({
+          state: s.state,
+          is_ut: s.is_ut,
+          role: "state_planner",
+          roleLabel: "State Planner",
+          jurisdiction: `${s.state} State Planning Commission`,
+          username: s.planner.username,
+          password: s.planner.password,
+          display_name: s.planner.display_name,
+        });
+      }
+
+      // District Collector records
+      if (selectedRole === "ALL" || selectedRole === "district_collector") {
+        s.districts.forEach((d) => {
+          rows.push({
+            state: s.state,
+            is_ut: s.is_ut,
+            role: "district_collector",
+            roleLabel: "District Collector",
+            jurisdiction: `${d.district} District, ${s.state}`,
+            username: d.username,
+            password: d.password,
+            display_name: d.display_name,
+          });
+        });
+      }
+    });
+
+    // Apply search query filter
+    const filteredRows = rows.filter((r) => {
+      if (!query) return true;
+      return (
+        r.state.toLowerCase().includes(query) ||
+        r.jurisdiction.toLowerCase().includes(query) ||
+        r.username.toLowerCase().includes(query) ||
+        r.roleLabel.toLowerCase().includes(query)
+      );
+    });
+
+    if (dirCountLabel) {
+      dirCountLabel.textContent = `Showing ${filteredRows.length.toLocaleString()} of 820 Official Accounts`;
+    }
+
+    if (!filteredRows.length) {
+      dirTableBody.innerHTML = `
+        <tr>
+          <td colspan="3" class="text-center py-4 text-slate-500">
+            <i class="bi bi-search me-1"></i> No matching officers found for "${query}".
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    // Limit initial display to first 250 rows for smooth rendering if no search
+    const displayList = filteredRows.slice(0, 250);
+
+    dirTableBody.innerHTML = displayList
+      .map(
+        (r) => `
+        <tr>
+          <td>
+            <span class="fw-semibold text-slate-900">${r.state}</span>
+            ${r.is_ut ? '<span class="badge bg-secondary-subtle text-secondary fs-9 ms-1">UT</span>' : ''}
+          </td>
+          <td>
+            <span class="badge ${r.role === 'district_collector' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning-emphasis border border-warning-subtle'} fs-9">
+              <i class="bi ${r.role === 'district_collector' ? 'bi-geo-alt' : 'bi-diagram-3'} me-1"></i>${r.roleLabel}
+            </span>
+          </td>
+          <td class="text-slate-700 fw-medium">${r.jurisdiction}</td>
+        </tr>
+      `
+      )
+      .join("");
+  }
+
+  // Directory filter listeners
+  if (dirSearchInput) dirSearchInput.addEventListener("input", renderDirectoryTable);
+  if (dirStateFilter) dirStateFilter.addEventListener("change", renderDirectoryTable);
+  if (dirRoleFilter) dirRoleFilter.addEventListener("change", renderDirectoryTable);
+
+  // Restore session if present
+  try {
+    const savedSession = sessionStorage.getItem("janvista_officer");
+    if (savedSession) {
+      const parsed = JSON.parse(savedSession);
+      if (parsed && parsed.username) {
+        setOfficerSession(parsed);
+      }
+    }
+  } catch (e) { }
+
   // Initial load
+  loadStatesHierarchy();
   loadGrievances();
   renderMyGrievances();
-  applyRoleView("Policymaker");
+  if (!currentOfficerSession) {
+    applyRoleView("Policymaker");
+  }
 });
 
 
 // Global hotspot row selector
-window.selectHotspot = function(index) {
+window.selectHotspot = function (index) {
   const hotspotData = [
     { name: "Sitapur District, UP", cat: "Healthcare", gap: "91.2 %", score: "89.4 / 100", title: "Establish 100-Bed Sub-Divisional Hospital & Trauma Unit", desc: "High maternal & emergency transport deficit coupled with 94/100 citizen grievance density. Nearest tertiary trauma facility is 68 km away." },
     { name: "Koraput District, Odisha", cat: "Drinking Water", gap: "84.6 %", score: "82.1 / 100", title: "Gravity-Fed Piped Drinking Water & Fluoride Filtration", desc: "Severe seasonal water contamination with high fluoride concentration impacting 184 tribal hamlets." },
