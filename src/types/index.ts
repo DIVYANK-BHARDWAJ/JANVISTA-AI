@@ -41,6 +41,7 @@ export interface CitizenRequest {
   trackingId?: string;
   language: string;
   originalText: string;
+  rawTranscript?: string;
   normalizedText: string;
   category: InfrastructureCategory;
   issue: string;
@@ -48,8 +49,14 @@ export interface CitizenRequest {
   locationName: string;
   coordinates: LocationCoordinates;
   regionId: string;
+  state?: string;
+  district?: string;
   urgency: UrgencyLevel;
   intent: 'development_request' | 'grievance' | 'inquiry';
+  citizenName?: string;
+  citizenPhone?: string;
+  citizenEmail?: string;
+  status?: string;
   attachmentUrl?: string;
   timestamp: string;
   processingModel: string;

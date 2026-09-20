@@ -14,7 +14,7 @@ import { MessageSquare, CheckCircle2 } from "lucide-react";
  */
 export const DemandView: React.FC = () => {
   const [requests, setRequests] = useState<CitizenRequest[]>(dataStore.getRequests());
-  const [clusters, setClusters] = useState(dataStore.getClusters());
+  const [clusters] = useState(dataStore.getClusters());
   const [isLoading, setIsLoading] = useState(false);
   const [latestSubmission, setLatestSubmission] = useState<CitizenRequest | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<CitizenRequest | null>(null);
@@ -95,7 +95,7 @@ export const DemandView: React.FC = () => {
             <MessageSquare className="w-4 h-4 text-[#003366]" />
             <span>Systemic Demand Clusters (Aggregated Signals)</span>
           </h3>
-          <span className="text-xs text-slate-500">5 Clusters active</span>
+          <span className="text-xs text-slate-500">{clusters.length} Clusters active</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -112,25 +112,33 @@ export const DemandView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {clusters.map((c) => (
-                <tr key={c.id} className="hover:bg-slate-50 transition">
-                  <td className="p-3 font-mono text-[#003366] font-bold">{c.id}</td>
-                  <td className="p-3 font-bold text-slate-900">
-                    {dataStore.getRegionById(c.regionId)?.name || c.regionId}
-                  </td>
-                  <td className="p-3">
-                    <CategoryBadge category={c.category} />
-                  </td>
-                  <td className="p-3 max-w-xs truncate">{c.dominantIssue}</td>
-                  <td className="p-3 text-right font-extrabold text-slate-900">{c.requestCount.toLocaleString()}</td>
-                  <td className="p-3 text-right font-bold text-[#003366]">{c.normalizedDemand} / 100</td>
-                  <td className="p-3">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${c.temporalTrend === 'increasing' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-slate-100 text-slate-700'}`}>
-                      {c.temporalTrend}
-                    </span>
+              {clusters.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-slate-500 font-medium">
+                    No active demand clusters yet. Submit a citizen grievance to generate AI demand clusters.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                clusters.map((c) => (
+                  <tr key={c.id} className="hover:bg-slate-50 transition">
+                    <td className="p-3 font-mono text-[#003366] font-bold">{c.id}</td>
+                    <td className="p-3 font-bold text-slate-900">
+                      {dataStore.getRegionById(c.regionId)?.name || c.regionId}
+                    </td>
+                    <td className="p-3">
+                      <CategoryBadge category={c.category} />
+                    </td>
+                    <td className="p-3 max-w-xs truncate">{c.dominantIssue}</td>
+                    <td className="p-3 text-right font-extrabold text-slate-900">{c.requestCount.toLocaleString()}</td>
+                    <td className="p-3 text-right font-bold text-[#003366]">{c.normalizedDemand} / 100</td>
+                    <td className="p-3">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${c.temporalTrend === 'increasing' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-slate-100 text-slate-700'}`}>
+                        {c.temporalTrend}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -168,39 +176,47 @@ export const DemandView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {requests.map((req) => (
-                <tr key={req.id} className="hover:bg-slate-50 transition">
-                  <td className="p-3 font-mono font-bold text-[#003366]">
-                    {req.trackingId || req.id}
-                  </td>
-                  <td className="p-3 font-semibold text-slate-900">
-                    {req.locationName}
-                  </td>
-                  <td className="p-3">
-                    <CategoryBadge category={req.category} />
-                  </td>
-                  <td className="p-3">
-                    <UrgencyBadge urgency={req.urgency} />
-                  </td>
-                  <td className="p-3 max-w-sm truncate" title={req.originalText || req.normalizedText}>
-                    {req.issue}
-                  </td>
-                  <td className="p-3 uppercase text-[10px] font-bold text-slate-500">
-                    {req.language}
-                  </td>
-                  <td className="p-3 text-slate-500 text-[11px]">
-                    {new Date(req.timestamp).toLocaleDateString()}
-                  </td>
-                  <td className="p-3 text-center">
-                    <button
-                      onClick={() => setSelectedRequest(req)}
-                      className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold px-3 py-1 rounded transition shadow-sm"
-                    >
-                      View Complete
-                    </button>
+              {requests.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-slate-500 font-medium">
+                    No citizen requests logged yet. Use the voice recorder or text form above to submit your first request!
                   </td>
                 </tr>
-              ))}
+              ) : (
+                requests.map((req) => (
+                  <tr key={req.id} className="hover:bg-slate-50 transition">
+                    <td className="p-3 font-mono font-bold text-[#003366]">
+                      {req.trackingId || req.id}
+                    </td>
+                    <td className="p-3 font-semibold text-slate-900">
+                      {req.locationName}
+                    </td>
+                    <td className="p-3">
+                      <CategoryBadge category={req.category} />
+                    </td>
+                    <td className="p-3">
+                      <UrgencyBadge urgency={req.urgency} />
+                    </td>
+                    <td className="p-3 max-w-sm truncate" title={req.rawTranscript || req.normalizedText}>
+                      {req.issue}
+                    </td>
+                    <td className="p-3 uppercase text-[10px] font-bold text-slate-500">
+                      {req.language}
+                    </td>
+                    <td className="p-3 text-slate-500 text-[11px]">
+                      {new Date(req.timestamp).toLocaleDateString()}
+                    </td>
+                    <td className="p-3 text-center">
+                      <button
+                        onClick={() => setSelectedRequest(req)}
+                        className="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold px-3 py-1 rounded transition shadow-sm"
+                      >
+                        View Complete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -255,7 +271,7 @@ export const DemandView: React.FC = () => {
                   Original Citizen Voice / Grievance Statement:
                 </h5>
                 <div className="bg-amber-50/50 border border-amber-200 p-3.5 rounded text-xs text-slate-900 font-medium leading-relaxed">
-                  "{selectedRequest.originalText}"
+                  &quot;{selectedRequest.rawTranscript}&quot;
                 </div>
               </div>
 

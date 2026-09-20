@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Landmark, MapPin, KeyRound, ShieldCheck, ArrowLeft, Lock, RotateCcw, Eye, EyeOff } from "lucide-react";
 import { INDIA_STATES } from "@/lib/data/india-states";
 import { OfficerJurisdiction, UserRole } from "@/types";
+import { GoogleFirestoreDatabaseService } from "@/lib/db/firestore";
 
 interface OfficerLoginProps {
   /** Which official role is being authenticated. */
@@ -10,19 +11,15 @@ interface OfficerLoginProps {
   onCancel: () => void;
 }
 
-/** LocalStorage key an officer's self-set password is stored under (demo-only, not production auth). */
+/** Firestore key an officer's self-set password is stored under. */
 function storageKey(role: string, stateCode: string, district?: string) {
   return `janvista_officer_pw::${role}::${stateCode}${district ? `::${district}` : ""}`;
 }
 
 /**
  * OfficerLogin
- * Login gate shown whenever the role switcher is set to "State Planner" or
- * "District Collector". Flow:
- *   1) Pick jurisdiction (State, and District for collectors).
- *   2) First time for that jurisdiction -> SET a password.
- *      Returning to that jurisdiction -> ENTER the previously set password.
- * Passwords are stored client-side (localStorage) for demo/reference purposes only.
+ * Login gate shown whenever the role switcher is set to "State Planner" or "District Collector".
+ * Stores officer credentials in Google Cloud Firestore database ('user_credentials' collection).
  */
 export const OfficerLogin: React.FC<OfficerLoginProps> = ({ role, onSuccess, onCancel }) => {
   const isCollector = role === "DISTRICT_COLLECTOR";
@@ -36,42 +33,47 @@ export const OfficerLogin: React.FC<OfficerLoginProps> = ({ role, onSuccess, onC
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string>("");
 
+  const [hasExistingPassword, setHasExistingPassword] = useState<boolean>(false);
+  const [storedPasswordHash, setStoredPasswordHash] = useState<string | null>(null);
+
   const selectedState = useMemo(() => INDIA_STATES.find((s) => s.name === stateName), [stateName]);
-  const hasExistingPassword = useMemo(() => {
-    if (!selectedState || (isCollector && !district)) return false;
-    return typeof window !== "undefined" && !!localStorage.getItem(
-      storageKey(role, selectedState.code, isCollector ? district : undefined)
-    );
-  }, [selectedState, district, isCollector, role]);
 
   const canProceedToPassword = isCollector ? Boolean(stateName && district) : Boolean(stateName);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     setError("");
     if (!canProceedToPassword) {
       setError(isCollector ? "Please select both State and District to continue." : "Please select a State to continue.");
       return;
     }
+    if (selectedState) {
+      const key = storageKey(role, selectedState.code, isCollector ? district : undefined);
+      const cred = await GoogleFirestoreDatabaseService.getUserCredential(key);
+      if (cred && cred.passwordHash) {
+        setHasExistingPassword(true);
+        setStoredPasswordHash(cred.passwordHash);
+      } else {
+        setHasExistingPassword(false);
+        setStoredPasswordHash(null);
+      }
+    }
     setStep("password");
   };
 
-  const handleSubmitPassword = () => {
+  const handleSubmitPassword = async () => {
     if (!selectedState) return;
     const key = storageKey(role, selectedState.code, isCollector ? district : undefined);
 
     if (hasExistingPassword) {
-      // LOGIN MODE — verify against the password this officer set previously.
-      const stored = localStorage.getItem(key);
       if (password.length === 0) {
         setError("Please enter your password.");
         return;
       }
-      if (stored !== btoa(password)) {
+      if (storedPasswordHash && storedPasswordHash !== btoa(password)) {
         setError("Incorrect password. Please try again, or reset access below.");
         return;
       }
     } else {
-      // SET PASSWORD MODE — first-time access for this jurisdiction.
       if (password.length < 6) {
         setError("Password must be at least 6 characters.");
         return;
@@ -80,7 +82,16 @@ export const OfficerLogin: React.FC<OfficerLoginProps> = ({ role, onSuccess, onC
         setError("Passwords do not match.");
         return;
       }
-      localStorage.setItem(key, btoa(password));
+      const hash = btoa(password);
+      await GoogleFirestoreDatabaseService.saveUserCredential({
+        id: key,
+        role,
+        jurisdictionKey: key,
+        passwordHash: hash,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      localStorage.setItem(key, hash);
     }
 
     const displayName = isCollector
@@ -95,14 +106,25 @@ export const OfficerLogin: React.FC<OfficerLoginProps> = ({ role, onSuccess, onC
     });
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (!selectedState) return;
     const key = storageKey(role, selectedState.code, isCollector ? district : undefined);
     localStorage.removeItem(key);
+    await GoogleFirestoreDatabaseService.saveUserCredential({
+      id: key,
+      role,
+      jurisdictionKey: key,
+      passwordHash: "",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    setHasExistingPassword(false);
+    setStoredPasswordHash(null);
     setPassword("");
     setConfirmPassword("");
-    setError("Access reset. Please set a new password to continue.");
+    setError("Access reset in Google Firestore. Please set a new password to continue.");
   };
+
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans">

@@ -6,6 +6,7 @@ import { Sidebar, NavTab } from "@/components/navigation/Sidebar";
 import { OfficerJurisdiction, UserRole } from "@/types";
 import { dataStore } from "@/lib/data/store";
 import { OfficerLogin } from "@/components/auth/OfficerLogin";
+import { CitizenLogin } from "@/components/auth/CitizenLogin";
 
 import { OverviewView } from "@/components/views/OverviewView";
 import { MapView } from "@/components/views/MapView";
@@ -21,9 +22,7 @@ import { PortalGateway } from "@/components/gateway/PortalGateway";
 
 /**
  * JANVISTA AI Main Landing & Application Page
- * Default: Portal Gateway Landing Page (2 Options: Citizen vs Govt Official).
- * Citizen View: Public grievance ingestion & tracking ID lookup.
- * Government View: Decision Intelligence Platform (Map, Hotspots, Infra Gaps, Recommendations, Simulator, Ask JANVISTA).
+ * Enforces strict Password Protection for BOTH Citizen Portal and Government Official Portal.
  */
 export default function Home() {
   const [viewMode, setViewMode] = useState<"gateway" | "citizen" | "government">("gateway");
@@ -31,13 +30,12 @@ export default function Home() {
   const [currentRole, setCurrentRole] = useState<UserRole>("POLICYMAKER");
   const [selectedState, setSelectedState] = useState<string>("All India");
   const [jurisdiction, setJurisdiction] = useState<OfficerJurisdiction | null>(null);
-  // Role change staged while it awaits the officer login gate (State Planner / District Collector).
-  const [pendingOfficerRole, setPendingOfficerRole] = useState<Extract<UserRole, "STATE_PLANNER" | "DISTRICT_COLLECTOR"> | null>(null);
+  
+  // Password protection login gates
+  const [pendingOfficerRole, setPendingOfficerRole] = useState<Extract<UserRole, "STATE_PLANNER" | "DISTRICT_COLLECTOR" | "POLICYMAKER"> | null>(null);
+  const [pendingCitizenLogin, setPendingCitizenLogin] = useState<boolean>(false);
 
   const availableStates = Array.from(new Set(dataStore.getRegions().map((r) => r.state)));
-
-  const requiresOfficerLogin = (role: UserRole): role is Extract<UserRole, "STATE_PLANNER" | "DISTRICT_COLLECTOR"> =>
-    role === "STATE_PLANNER" || role === "DISTRICT_COLLECTOR";
 
   const handleOfficerLoginSuccess = (j: OfficerJurisdiction) => {
     if (!pendingOfficerRole) return;
@@ -48,12 +46,27 @@ export default function Home() {
     setPendingOfficerRole(null);
   };
 
-  // Officer Login Gate — shown whenever a role switch to State Planner / District Collector
-  // is requested, before that role (and its jurisdiction-scoped view) is granted.
+  const handleCitizenLoginSuccess = () => {
+    setPendingCitizenLogin(false);
+    setCurrentRole("CITIZEN");
+    setViewMode("citizen");
+  };
+
+  // Citizen Login Gate — shown whenever Citizen Portal access is requested
+  if (pendingCitizenLogin) {
+    return (
+      <CitizenLogin
+        onSuccess={handleCitizenLoginSuccess}
+        onCancel={() => setPendingCitizenLogin(false)}
+      />
+    );
+  }
+
+  // Officer Login Gate — shown whenever Government Official access is requested
   if (pendingOfficerRole) {
     return (
       <OfficerLogin
-        role={pendingOfficerRole}
+        role={pendingOfficerRole === "POLICYMAKER" ? "STATE_PLANNER" : pendingOfficerRole}
         onSuccess={handleOfficerLoginSuccess}
         onCancel={() => setPendingOfficerRole(null)}
       />
@@ -65,12 +78,13 @@ export default function Home() {
     return (
       <PortalGateway
         onSelectPortal={(portal, role) => {
-          if (role && requiresOfficerLogin(role)) {
-            setPendingOfficerRole(role);
+          if (portal === "citizen") {
+            setPendingCitizenLogin(true);
             return;
           }
-          if (role) setCurrentRole(role);
-          setViewMode(portal);
+          if (portal === "government" || role) {
+            setPendingOfficerRole(role === "POLICYMAKER" ? "STATE_PLANNER" : (role as Extract<UserRole, "STATE_PLANNER" | "DISTRICT_COLLECTOR">) || "STATE_PLANNER");
+          }
         }}
       />
     );
@@ -81,7 +95,7 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans">
         <main className="flex-1 p-4 lg:p-8 max-w-6xl mx-auto w-full">
-          <CitizenPortalView onSwitchPortal={(p) => setViewMode(p)} />
+          <CitizenPortalView onSwitchPortal={() => setViewMode("gateway")} />
         </main>
         <footer className="bg-white border-t border-slate-200 text-center py-3 text-xs text-slate-600 font-medium">
           JANVISTA AI • Jan-AI National Vision & Infrastructure Strategic Targeting Assistant • Government of India Citizen Services
@@ -97,15 +111,11 @@ export default function Home() {
       <Navbar
         currentRole={currentRole}
         onRoleChange={(role) => {
-          if (requiresOfficerLogin(role)) {
-            setPendingOfficerRole(role);
+          if (role === "CITIZEN") {
+            setPendingCitizenLogin(true);
             return;
           }
-          setCurrentRole(role);
-          setJurisdiction(null);
-          if (role === "CITIZEN") {
-            setViewMode("citizen");
-          }
+          setPendingOfficerRole(role === "POLICYMAKER" ? "STATE_PLANNER" : (role as Extract<UserRole, "STATE_PLANNER" | "DISTRICT_COLLECTOR">));
         }}
         selectedState={selectedState}
         onStateChange={setSelectedState}
@@ -125,7 +135,7 @@ export default function Home() {
           {activeTab === "map" && <MapView />}
           {activeTab === "demand" && <DemandView />}
           {activeTab === "citizen-portal" && (
-            <CitizenPortalView onSwitchPortal={(p) => setViewMode(p)} />
+            <CitizenPortalView onSwitchPortal={() => setViewMode("gateway")} />
           )}
           {activeTab === "hotspots" && <HotspotsView />}
           {activeTab === "infrastructure" && <InfrastructureView />}
