@@ -24,8 +24,18 @@ interface Props {
  * Displays national metrics, official priority spotlight, and national decision pipeline.
  */
 export const OverviewView: React.FC<Props> = ({ onNavigate }) => {
-  const topRec = dataStore.getRecommendations()[0];
-  const sitapurScore = dataStore.getPriorityScoreByRegion(topRec.regionId);
+  const requests = dataStore.getRequests();
+  const clusters = dataStore.getClusters();
+  const hotspots = dataStore.getHotspots();
+  const gaps = dataStore.getGaps();
+  const priorityScores = dataStore.getPriorityScores();
+  const recs = dataStore.getRecommendations();
+
+  const topRec = recs.length > 0 ? recs[0] : null;
+  const sitapurScore = topRec ? dataStore.getPriorityScoreByRegion(topRec.regionId) : null;
+
+  const maxGapVal = gaps.length > 0 ? Math.max(...gaps.map((g) => g.gapIndex)).toFixed(1) : "0.0";
+  const topPrioVal = priorityScores.length > 0 ? Math.max(...priorityScores.map((p) => p.score)).toFixed(1) : "0.0";
 
   return (
     <div className="space-y-6">
@@ -35,7 +45,7 @@ export const OverviewView: React.FC<Props> = ({ onNavigate }) => {
           <span className="bg-slate-100 text-slate-800 border border-slate-300 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
             National Vision & Infrastructure Decision Support
           </span>
-          <DataClassificationBadge classification="SYNTHETIC_DATA" />
+          <DataClassificationBadge classification="PUBLIC_REAL_DATA" />
         </div>
 
         <h2 className="text-xl font-black text-slate-900 tracking-tight">
@@ -71,40 +81,41 @@ export const OverviewView: React.FC<Props> = ({ onNavigate }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <KpiCard
           title="Citizen Requests"
-          value="8,421"
-          subtitle="Analyzed across 5 states"
+          value={requests.length.toLocaleString()}
+          subtitle={requests.length > 0 ? `Ingested across states` : "0 requests submitted yet"}
           icon={MessageSquare}
           accentColor="sky"
         />
         <KpiCard
           title="Demand Clusters"
-          value="5 Clusters"
+          value={`${clusters.length} Clusters`}
           subtitle="Spatial & semantic aggregation"
           icon={Users}
           accentColor="purple"
         />
         <KpiCard
           title="Hotspots Detected"
-          value="5 Regions"
-          subtitle="Sitapur UP ranked #1"
+          value={`${hotspots.length} Regions`}
+          subtitle={hotspots.length > 0 ? `Top: ${hotspots[0].regionName}` : "0 hotspots active"}
           icon={Flame}
           accentColor="rose"
         />
         <KpiCard
           title="Max Gap Index"
-          value="91.2 %"
-          subtitle="Sitapur Healthcare Deficit"
+          value={`${maxGapVal} %`}
+          subtitle="Infrastructure Deficit"
           icon={Building2}
           accentColor="amber"
         />
         <KpiCard
           title="Top Priority Score"
-          value="89.4 / 100"
-          subtitle="Model v1.0.0 (Audited)"
+          value={`${topPrioVal} / 100`}
+          subtitle="Model v1.0.0 (Live)"
           icon={Award}
           accentColor="emerald"
         />
       </div>
+
 
       {/* Priority Opportunity Spotlight */}
       {topRec && sitapurScore && (

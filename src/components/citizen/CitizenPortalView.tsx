@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { CitizenRequest } from "@/types";
 import { dataStore } from "@/lib/data/store";
 import { VoiceRecorder } from "./VoiceRecorder";
@@ -16,6 +16,7 @@ import {
   Info,
 } from "lucide-react";
 import { SUPPORTED_LANGUAGES } from "@/config/priority-weights";
+import { INDIA_STATES } from "@/lib/data/india-states";
 
 type InputTab = "voice" | "text" | "photo";
 
@@ -26,8 +27,7 @@ interface CitizenPortalViewProps {
 /**
  * CitizenPortalView Component
  * Dedicated, public-facing Citizen Ingestion Portal page.
- * Supports multi-channel submission (Voice Speech-to-Text, Natural Language Text, Photo/Document Attachment),
- * real-time Gemini structuring, tracking ID generation, and signal status lookup.
+ * Strictly isolated from internal Government Decision Modules.
  */
 export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPortal }) => {
   const [activeInputTab, setActiveInputTab] = useState<InputTab>("voice");
@@ -35,6 +35,10 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
   const [selectedState, setSelectedState] = useState("Uttar Pradesh");
   const [selectedDistrict, setSelectedDistrict] = useState("Sitapur");
   const [selectedBlock, setSelectedBlock] = useState("Khairabad");
+
+  const currentStateInfo = useMemo(() => {
+    return INDIA_STATES.find((s) => s.name === selectedState);
+  }, [selectedState]);
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string>("");
@@ -45,7 +49,7 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
   const [trackedSignal, setTrackedSignal] = useState<CitizenRequest | null>(null);
   const [trackingError, setTrackingError] = useState("");
 
-  const regions = dataStore.getRegions();
+  const recentRequests = dataStore.getRequests();
 
   // Handle Photo / File Upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +116,7 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
               <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                 Government Digital Public Infrastructure
               </span>
-              <DataClassificationBadge classification="SYNTHETIC_DATA" />
+              <DataClassificationBadge classification="PUBLIC_REAL_DATA" />
             </div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight mt-1">
               NATIONAL CITIZEN DEVELOPMENT VOICE & GRIEVANCE PORTAL
@@ -124,20 +128,12 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
 
           <div className="flex flex-wrap items-center gap-2">
             {onSwitchPortal && (
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => onSwitchPortal("gateway")}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold text-xs px-3 py-1.5 rounded transition"
-                >
-                  ← Exit to Portal Gateway
-                </button>
-                <button
-                  onClick={() => onSwitchPortal("government")}
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3 py-1.5 rounded shadow-sm transition flex items-center space-x-1"
-                >
-                  <span>Official Govt Portal 🏛️</span>
-                </button>
-              </div>
+              <button
+                onClick={() => onSwitchPortal("gateway")}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold text-xs px-3 py-1.5 rounded transition"
+              >
+                ← Exit to Gateway
+              </button>
             )}
 
             {/* Regional Language Toggle Bar */}
@@ -213,28 +209,58 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
           {/* Location Context Form */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 border border-slate-200 p-3 rounded text-xs">
             <div>
-              <label className="text-slate-600 font-bold block mb-1">State</label>
+              <label className="text-slate-600 font-bold block mb-1">State / UT</label>
               <select
                 value={selectedState}
-                onChange={(e) => setSelectedState(e.target.value)}
+                onChange={(e) => {
+                  const newState = e.target.value;
+                  setSelectedState(newState);
+                  const info = INDIA_STATES.find((s) => s.name === newState);
+                  if (info && info.districts.length > 0) {
+                    setSelectedDistrict(info.districts[0]);
+                  }
+                }}
                 className="w-full bg-white border border-slate-300 rounded p-1.5 font-semibold text-slate-900"
               >
-                <option value="Uttar Pradesh">Uttar Pradesh</option>
-                <option value="Bihar">Bihar</option>
-                <option value="Maharashtra">Maharashtra</option>
-                <option value="Tamil Nadu">Tamil Nadu</option>
-                <option value="Assam">Assam</option>
+                <optgroup label="28 States">
+                  {INDIA_STATES.filter((s) => !s.isUT).map((s) => (
+                    <option key={s.code} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="8 Union Territories">
+                  {INDIA_STATES.filter((s) => s.isUT).map((s) => (
+                    <option key={s.code} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 
             <div>
               <label className="text-slate-600 font-bold block mb-1">District</label>
-              <input
-                type="text"
-                value={selectedDistrict}
-                onChange={(e) => setSelectedDistrict(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded p-1.5 font-semibold text-slate-900"
-              />
+              {currentStateInfo && currentStateInfo.districts.length > 0 ? (
+                <select
+                  value={selectedDistrict}
+                  onChange={(e) => setSelectedDistrict(e.target.value)}
+                  className="w-full bg-white border border-slate-300 rounded p-1.5 font-semibold text-slate-900"
+                >
+                  {currentStateInfo.districts.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={selectedDistrict}
+                  onChange={(e) => setSelectedDistrict(e.target.value)}
+                  className="w-full bg-white border border-slate-300 rounded p-1.5 font-semibold text-slate-900"
+                />
+              )}
             </div>
 
             <div>

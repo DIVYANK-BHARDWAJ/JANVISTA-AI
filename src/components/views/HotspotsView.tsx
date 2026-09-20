@@ -35,29 +35,37 @@ export const HotspotsView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {hotspots.map((h) => (
-                <tr key={h.id} className="hover:bg-slate-50 transition">
-                  <td className="p-3">
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${h.rank === 1 ? 'bg-rose-700 text-white' : 'bg-slate-200 text-slate-800'}`}>
-                      #{h.rank}
-                    </span>
-                  </td>
-                  <td className="p-3 font-bold text-slate-900">
-                    {h.regionName} <span className="text-slate-500 font-normal">({h.state})</span>
-                  </td>
-                  <td className="p-3">
-                    <CategoryBadge category={h.category} />
-                  </td>
-                  <td className="p-3 text-right font-black text-rose-800 text-sm">{h.hotspotScore} / 100</td>
-                  <td className="p-3 text-right font-mono text-slate-700">{h.demandDensity} sig/k-cap</td>
-                  <td className="p-3">
-                    <UrgencyBadge urgency={h.urgency} />
-                  </td>
-                  <td className="p-3 font-mono text-[11px] text-slate-500">
-                    {h.coordinates.latitude.toFixed(2)}°N, {h.coordinates.longitude.toFixed(2)}°E
+              {hotspots.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-slate-500 font-medium">
+                    No geospatial hotspots detected yet. As soon as citizen requests are logged, hotspots are computed automatically.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                hotspots.map((h) => (
+                  <tr key={h.id} className="hover:bg-slate-50 transition">
+                    <td className="p-3">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${h.rank === 1 ? 'bg-rose-700 text-white' : 'bg-slate-200 text-slate-800'}`}>
+                        #{h.rank}
+                      </span>
+                    </td>
+                    <td className="p-3 font-bold text-slate-900">
+                      {h.regionName} <span className="text-slate-500 font-normal">({h.state})</span>
+                    </td>
+                    <td className="p-3">
+                      <CategoryBadge category={h.category} />
+                    </td>
+                    <td className="p-3 text-right font-black text-rose-800 text-sm">{h.hotspotScore} / 100</td>
+                    <td className="p-3 text-right font-mono text-slate-700">{h.demandDensity} sig/k-cap</td>
+                    <td className="p-3">
+                      <UrgencyBadge urgency={h.urgency} />
+                    </td>
+                    <td className="p-3 font-mono text-[11px] text-slate-500">
+                      {h.coordinates.latitude.toFixed(2)}°N, {h.coordinates.longitude.toFixed(2)}°E
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

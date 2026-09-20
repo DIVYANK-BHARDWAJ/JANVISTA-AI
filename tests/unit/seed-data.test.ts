@@ -24,11 +24,32 @@ describe("Data Store & Seed Integrity", () => {
     expect(Math.round(sumWeights * 100) / 100).toBe(1.0);
   });
 
-  it("should contain Sitapur demo healthcare scenario recommendation with SYNTHETIC_DATA classification", () => {
-    const recs = dataStore.getRecommendations();
-    const sitapurRec = recs.find((r) => r.regionId === "reg-sitapur-up");
-    expect(sitapurRec).toBeDefined();
-    expect(sitapurRec?.priorityScore).toBe(89.4);
-    expect(sitapurRec?.dataClassification).toBe("SYNTHETIC_DATA");
+  it("should start with 0 prefilled requests and compute dynamically upon adding requests", () => {
+    const requests = dataStore.getRequests();
+    expect(requests.length).toBe(0);
+    
+    // Adding a real request dynamically updates data store
+    const newReq = dataStore.addRequest({
+      id: "test-req-01",
+      trackingId: "JAN-TEST-01",
+      language: "hi",
+      originalText: "Need water pipeline in village",
+      normalizedText: "Need water pipeline in village",
+      category: "water_sanitation",
+      issue: "water_pipeline",
+      infrastructureType: "water_pipeline",
+      locationName: "Test Village, UP",
+      coordinates: { latitude: 27.57, longitude: 80.66 },
+      regionId: "reg-sitapur-up",
+      urgency: "high",
+      intent: "development_request",
+      timestamp: new Date().toISOString(),
+      processingModel: "gemini-1.5-flash",
+      modelVersion: "v1.0.0",
+      dataClassification: "PUBLIC_REAL_DATA",
+    });
+
+    expect(dataStore.getRequests().length).toBe(1);
+    expect(newReq.dataClassification).toBe("PUBLIC_REAL_DATA");
   });
 });
