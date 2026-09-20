@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { Sidebar, NavTab } from "@/components/navigation/Sidebar";
-import { UserRole } from "@/types";
+import { OfficerJurisdiction, UserRole } from "@/types";
 import { dataStore } from "@/lib/data/store";
+import { OfficerLogin } from "@/components/auth/OfficerLogin";
 
 import { OverviewView } from "@/components/views/OverviewView";
 import { MapView } from "@/components/views/MapView";
@@ -29,14 +30,45 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<NavTab>("overview");
   const [currentRole, setCurrentRole] = useState<UserRole>("POLICYMAKER");
   const [selectedState, setSelectedState] = useState<string>("All India");
+  const [jurisdiction, setJurisdiction] = useState<OfficerJurisdiction | null>(null);
+  // Role change staged while it awaits the officer login gate (State Planner / District Collector).
+  const [pendingOfficerRole, setPendingOfficerRole] = useState<Extract<UserRole, "STATE_PLANNER" | "DISTRICT_COLLECTOR"> | null>(null);
 
   const availableStates = Array.from(new Set(dataStore.getRegions().map((r) => r.state)));
+
+  const requiresOfficerLogin = (role: UserRole): role is Extract<UserRole, "STATE_PLANNER" | "DISTRICT_COLLECTOR"> =>
+    role === "STATE_PLANNER" || role === "DISTRICT_COLLECTOR";
+
+  const handleOfficerLoginSuccess = (j: OfficerJurisdiction) => {
+    if (!pendingOfficerRole) return;
+    setJurisdiction(j);
+    setCurrentRole(pendingOfficerRole);
+    setSelectedState(j.state);
+    setViewMode("government");
+    setPendingOfficerRole(null);
+  };
+
+  // Officer Login Gate — shown whenever a role switch to State Planner / District Collector
+  // is requested, before that role (and its jurisdiction-scoped view) is granted.
+  if (pendingOfficerRole) {
+    return (
+      <OfficerLogin
+        role={pendingOfficerRole}
+        onSuccess={handleOfficerLoginSuccess}
+        onCancel={() => setPendingOfficerRole(null)}
+      />
+    );
+  }
 
   // Gateway Selector View
   if (viewMode === "gateway") {
     return (
       <PortalGateway
         onSelectPortal={(portal, role) => {
+          if (role && requiresOfficerLogin(role)) {
+            setPendingOfficerRole(role);
+            return;
+          }
           if (role) setCurrentRole(role);
           setViewMode(portal);
         }}
@@ -64,17 +96,28 @@ export default function Home() {
       {/* Top Navigation Bar */}
       <Navbar
         currentRole={currentRole}
-        onRoleChange={setCurrentRole}
+        onRoleChange={(role) => {
+          if (requiresOfficerLogin(role)) {
+            setPendingOfficerRole(role);
+            return;
+          }
+          setCurrentRole(role);
+          setJurisdiction(null);
+          if (role === "CITIZEN") {
+            setViewMode("citizen");
+          }
+        }}
         selectedState={selectedState}
         onStateChange={setSelectedState}
         availableStates={availableStates}
         onSwitchPortal={() => setViewMode("gateway")}
+        jurisdictionLabel={jurisdiction?.displayName}
       />
 
       {/* Main Workspace Body */}
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Left Sidebar Navigation */}
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} currentRole={currentRole} />
 
         {/* Tab View Container */}
         <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-6 overflow-y-auto">

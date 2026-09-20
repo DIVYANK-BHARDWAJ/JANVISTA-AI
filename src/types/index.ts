@@ -9,7 +9,17 @@ export type UserRole =
   | 'POLICYMAKER' 
   | 'ANALYST' 
   | 'DISTRICT_OFFICIAL' 
+  | 'STATE_PLANNER'
+  | 'DISTRICT_COLLECTOR'
   | 'CITIZEN';
+
+/** Jurisdiction context captured at officer login (State Planner / District Collector). */
+export interface OfficerJurisdiction {
+  state: string;
+  stateCode: string;
+  district?: string;
+  displayName: string;
+}
 
 export type InfrastructureCategory = 
   | 'healthcare' 

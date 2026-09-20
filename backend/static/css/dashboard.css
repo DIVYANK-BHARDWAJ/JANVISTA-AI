@@ -1,0 +1,254 @@
+/* JANVISTA AI - Premium Government Decision Support Theme */
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', var(--font-sans);
+  
+  --color-slate-950: #020617;
+  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-700: #334155;
+  --color-slate-600: #475569;
+  --color-slate-500: #64748b;
+  --color-slate-200: #e2e8f0;
+  --color-slate-100: #f1f5f9;
+  --color-slate-50:  #f8fafc;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-900);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, .brand-title {
+  font-family: var(--font-display);
+}
+
+/* Custom Text & Font Sizes */
+.fs-7 { font-size: 0.85rem !important; }
+.fs-8 { font-size: 0.75rem !important; }
+.fs-9 { font-size: 0.68rem !important; }
+
+/* Slate Background Utilities */
+.bg-slate-950 { background-color: #020617 !important; color: #ffffff !important; }
+.bg-slate-900 { background-color: #0f172a !important; color: #ffffff !important; }
+.bg-slate-800 { background-color: #1e293b !important; color: #ffffff !important; }
+.bg-slate-700 { background-color: #334155 !important; }
+.bg-slate-100 { background-color: #f1f5f9 !important; }
+.bg-slate-50  { background-color: #f8fafc !important; }
+
+/* Slate Text Utilities */
+.text-slate-900 { color: #0f172a !important; }
+.text-slate-800 { color: #1e293b !important; }
+.text-slate-700 { color: #334155 !important; }
+.text-slate-600 { color: #475569 !important; }
+.text-slate-500 { color: #64748b !important; }
+.text-slate-400 { color: #94a3b8 !important; }
+.text-slate-300 { color: #cbd5e1 !important; }
+.text-slate-200 { color: #e2e8f0 !important; }
+
+/* Slate Border Utilities */
+.border-slate-800 { border-color: #1e293b !important; }
+.border-slate-700 { border-color: #334155 !important; }
+.border-slate-300 { border-color: #cbd5e1 !important; }
+.border-slate-200 { border-color: #e2e8f0 !important; }
+
+/* Modal Action Card Styling - High Contrast & Clearly Visible */
+#modalExecutiveActionCard {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155 !important;
+}
+
+#modalExecutiveActionCard .card-header {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+#modalExecutiveActionCard .card-body {
+  background-color: #0f172a !important;
+}
+
+#modalExecutiveActionCard .form-label {
+  color: #f1f5f9 !important;
+  font-weight: 700 !important;
+}
+
+#modalExecutiveActionCard .form-select,
+#modalExecutiveActionCard .form-control {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border: 1px solid #475569 !important;
+}
+
+#modalExecutiveActionCard .form-select:focus,
+#modalExecutiveActionCard .form-control:focus {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 0.2rem rgba(56, 189, 248, 0.25) !important;
+}
+
+#modalExecutiveActionCard .btn-outline-light {
+  border-color: #64748b !important;
+  color: #f1f5f9 !important;
+}
+
+#modalExecutiveActionCard .btn-outline-light:hover {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+}
+
+.brand-badge {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%) !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+.brand-title {
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+}
+
+.brand-subtitle {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+/* Banner Styling */
+.official-banner {
+  background: #ffffff;
+  border-left: 4px solid #0f172a !important;
+}
+
+.lead-text {
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* KPI Cards */
+.kpi-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.kpi-sky::before { background-color: #0284c7; }
+.kpi-purple::before { background-color: #9333ea; }
+.kpi-rose::before { background-color: #e11d48; }
+.kpi-amber::before { background-color: #d97706; }
+.kpi-emerald::before { background-color: #059669; }
+
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.kpi-icon-pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+/* Accent Colors */
+.bg-sky-subtle { background-color: #e0f2fe !important; }
+.text-sky { color: #0369a1 !important; }
+
+.bg-purple-subtle { background-color: #f3e8ff !important; }
+.text-purple { color: #7e22ce !important; }
+
+.bg-rose-subtle { background-color: #ffe4e6 !important; }
+.text-rose { color: #be123c !important; }
+
+.bg-amber-subtle { background-color: #fef3c7 !important; }
+.text-amber { color: #b45309 !important; }
+
+.bg-emerald-subtle { background-color: #d1fae5 !important; }
+.text-emerald { color: #047857 !important; }
+.text-emerald-emphasis { color: #065f46 !important; }
+
+/* Interactive Buttons */
+.btn {
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-primary {
+  background-color: #1e293b;
+  border-color: #1e293b;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: #0f172a;
+  border-color: #0f172a;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+}
+
+.btn-dark {
+  background-color: #020617;
+  border-color: #020617;
+}
+
+.btn-dark:hover {
+  background-color: #1e293b;
+  border-color: #1e293b;
+}
+
+/* Form Sliders */
+.form-range::-webkit-slider-thumb {
+  background: #0f172a;
+  transition: transform 0.1s ease;
+}
+
+.form-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.form-range::-moz-range-thumb {
+  background: #0f172a;
+}
+
+/* Factor Progress Bars */
+.progress {
+  border-radius: 9999px;
+  background-color: #f1f5f9;
+}
+
+.progress-bar {
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+/* Tables */
+.table thead th {
+  font-weight: 700;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8fafc;
+}
