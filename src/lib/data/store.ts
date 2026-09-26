@@ -132,13 +132,75 @@ class DataStore {
   }
 
   getRequests(): CitizenRequest[] {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("janvista_db_citizen_requests");
+        if (stored) {
+          const list = JSON.parse(stored);
+          if (Array.isArray(list) && list.length > 0) {
+            const knownIds = new Set(this.requests.map((r) => r.id));
+            const knownTrackingIds = new Set(this.requests.map((r) => r.trackingId).filter(Boolean));
+            list.forEach((doc: {
+              id: string;
+              trackingId?: string;
+              originalLanguage?: string;
+              createdAt?: string;
+              description?: string;
+              translatedText?: string;
+              category?: CitizenRequest["category"];
+              urgency?: CitizenRequest["urgency"];
+              villageOrWard?: string;
+              state?: string;
+              district?: string;
+              name?: string;
+              phone?: string;
+              email?: string;
+              status?: CitizenRequest["status"];
+            }) => {
+              if (!knownIds.has(doc.id) && (!doc.trackingId || !knownTrackingIds.has(doc.trackingId))) {
+                this.requests.push({
+                  id: doc.id,
+                  trackingId: doc.trackingId || doc.id,
+                  language: doc.originalLanguage || "hi",
+                  timestamp: doc.createdAt || new Date().toISOString(),
+                  originalText: doc.description || "",
+                  rawTranscript: doc.description || "",
+                  normalizedText: doc.translatedText || doc.description || "",
+                  intent: "development_request",
+                  category: doc.category || "healthcare",
+                  infrastructureType: doc.category || "healthcare",
+                  issue: doc.description || "",
+                  urgency: doc.urgency || "medium",
+                  locationName: doc.villageOrWard || `${doc.district || "Sitapur"}, ${doc.state || "Uttar Pradesh"}`,
+                  coordinates: { latitude: 27.57, longitude: 80.66 },
+                  regionId: "reg-sitapur-up",
+                  state: doc.state || "Uttar Pradesh",
+                  district: doc.district || "Sitapur",
+                  citizenName: doc.name || "Citizen User",
+                  citizenPhone: doc.phone || "",
+                  citizenEmail: doc.email || "",
+                  status: doc.status || "Submitted",
+                  processingModel: "gemini-1.5-flash",
+                  modelVersion: "v1.0.0",
+                  dataClassification: "PUBLIC_REAL_DATA",
+                });
+                knownIds.add(doc.id);
+                if (doc.trackingId) knownTrackingIds.add(doc.trackingId);
+              }
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("Could not sync requests from localStorage:", e);
+      }
+    }
     return this.requests.map((r) => ({ ...r, dataClassification: "PUBLIC_REAL_DATA" }));
   }
 
   async getRequestsFromFirestore(): Promise<CitizenRequest[]> {
     const firestoreDocs = await GoogleFirestoreDatabaseService.getCitizenRequests();
     if (firestoreDocs && firestoreDocs.length > 0) {
-      return firestoreDocs.map((doc) => ({
+      const mapped: CitizenRequest[] = firestoreDocs.map((doc) => ({
         id: doc.id,
         trackingId: doc.trackingId,
         language: doc.originalLanguage || "hi",
@@ -146,7 +208,7 @@ class DataStore {
         originalText: doc.description,
         rawTranscript: doc.description,
         normalizedText: doc.translatedText || doc.description,
-        intent: "development_request",
+        intent: "development_request" as const,
         category: doc.category,
         infrastructureType: doc.category,
         issue: doc.description,
@@ -162,10 +224,19 @@ class DataStore {
         status: doc.status,
         processingModel: "gemini-1.5-flash",
         modelVersion: "v1.0.0",
-        dataClassification: "PUBLIC_REAL_DATA",
+        dataClassification: "PUBLIC_REAL_DATA" as const,
       }));
+
+      const knownIds = new Set(this.requests.map((r) => r.id));
+      mapped.forEach((r) => {
+        if (!knownIds.has(r.id)) {
+          this.requests.push(r);
+          knownIds.add(r.id);
+        }
+      });
+      return this.requests.map((r) => ({ ...r, dataClassification: "PUBLIC_REAL_DATA" }));
     }
-    return this.requests;
+    return this.getRequests();
   }
 
   addRequest(req: CitizenRequest): CitizenRequest {
@@ -174,9 +245,16 @@ class DataStore {
       dataClassification: "PUBLIC_REAL_DATA",
     };
 
-    this.requests.unshift(requestWithRealClassification);
+    const existingIdx = this.requests.findIndex(
+      (r) => r.id === req.id || (r.trackingId && req.trackingId && r.trackingId === req.trackingId)
+    );
+    if (existingIdx >= 0) {
+      this.requests[existingIdx] = requestWithRealClassification;
+    } else {
+      this.requests.unshift(requestWithRealClassification);
+    }
     
-    // Persist directly to Google Cloud Firestore
+    // Persist directly to Google Cloud Firestore & local storage
     GoogleFirestoreDatabaseService.saveCitizenRequest({
       id: req.id,
       trackingId: req.trackingId || req.id,

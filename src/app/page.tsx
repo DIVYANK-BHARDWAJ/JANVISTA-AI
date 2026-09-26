@@ -133,7 +133,7 @@ export default function Home() {
         <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-6 overflow-y-auto">
           {activeTab === "overview" && <OverviewView onNavigate={setActiveTab} />}
           {activeTab === "map" && <MapView />}
-          {activeTab === "demand" && <DemandView />}
+          {activeTab === "demand" && <DemandView jurisdiction={jurisdiction} currentRole={currentRole} />}
           {activeTab === "citizen-portal" && (
             <CitizenPortalView onSwitchPortal={() => setViewMode("gateway")} />
           )}

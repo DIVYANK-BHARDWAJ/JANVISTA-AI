@@ -67,14 +67,20 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
       const res = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: textInput }),
+        body: JSON.stringify({
+          text: textInput,
+          state: selectedState,
+          district: selectedDistrict,
+          village_or_ward: `${selectedBlock}, ${selectedDistrict}`,
+          language: selectedLanguage,
+        }),
       });
       const data = await res.json();
       if (data.success && data.data) {
-        const trackingId = `JAN-2026-${selectedState.slice(0, 2).toUpperCase()}-${Math.floor(10000 + Math.random() * 90000)}`;
         const fullRequest: CitizenRequest = {
           ...data.data,
-          trackingId,
+          state: selectedState,
+          district: selectedDistrict,
           locationName: `${selectedBlock}, ${selectedDistrict}, ${selectedState}`,
           attachmentUrl: filePreviewUrl || undefined,
         };
@@ -95,14 +101,16 @@ export const CitizenPortalView: React.FC<CitizenPortalViewProps> = ({ onSwitchPo
     setTrackingError("");
     setTrackedSignal(null);
 
-    const found = recentRequests.find(
-      (r) => r.trackingId?.toLowerCase() === trackingIdInput.trim().toLowerCase() || r.id.toLowerCase() === trackingIdInput.trim().toLowerCase()
+    const allRequests = dataStore.getRequests();
+    const query = trackingIdInput.trim().toLowerCase();
+    const found = allRequests.find(
+      (r) => (r.trackingId && r.trackingId.toLowerCase() === query) || r.id.toLowerCase() === query
     );
 
     if (found) {
       setTrackedSignal(found);
     } else {
-      setTrackingError("Signal tracking ID not found. Try 'JAN-2026-UP-84219' or submit a new signal below.");
+      setTrackingError(`Signal tracking ID "${trackingIdInput.trim()}" not found. Verify the ID or check the Ledger tab.`);
     }
   };
 

@@ -18,7 +18,38 @@ import {
 const GCP_PROJECT_ID = process.env.GCP_PROJECT_ID || process.env.NEXT_PUBLIC_GCP_PROJECT_ID || "janvista-ai-gcp";
 const FIRESTORE_REST_BASE = `https://firestore.googleapis.com/v1/projects/${GCP_PROJECT_ID}/databases/(default)/documents`;
 
-// In-Memory & Local Storage Fallback for local development without active GCP credentials
+const CITIZEN_REQUESTS_STORAGE_KEY = "janvista_db_citizen_requests";
+
+function getNodeFs() {
+  if (typeof window === "undefined") {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require("fs");
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const path = require("path");
+      return { fs, path };
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function getLocalJsonDbPath(): string | null {
+  const node = getNodeFs();
+  if (!node) return null;
+  try {
+    const dir = node.path.join(process.cwd(), "backend", "data");
+    if (!node.fs.existsSync(dir)) {
+      node.fs.mkdirSync(dir, { recursive: true });
+    }
+    return node.path.join(dir, "citizen_requests.json");
+  } catch {
+    return null;
+  }
+}
+
+// In-Memory, Local Storage & Server JSON File Fallback for local development without active GCP credentials
 class LocalFirestoreStore {
   private requestsMap = new Map<string, CitizenRequestDoc>();
   private assetsMap = new Map<string, InfrastructureAssetDoc>();
@@ -27,6 +58,57 @@ class LocalFirestoreStore {
   private auditMap = new Map<string, AuditEventDoc>();
   private simulationsMap = new Map<string, SimulationDoc>();
   private credentialsMap = new Map<string, UserCredentialDoc>();
+
+  private loadPersistedRequests() {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(CITIZEN_REQUESTS_STORAGE_KEY);
+        if (stored) {
+          const list: CitizenRequestDoc[] = JSON.parse(stored);
+          if (Array.isArray(list)) {
+            list.forEach((r) => this.requestsMap.set(r.id, r));
+          }
+        }
+      } catch (e) {
+        console.warn("Local storage read error for citizen requests:", e);
+      }
+    } else {
+      const filePath = getLocalJsonDbPath();
+      const node = getNodeFs();
+      if (filePath && node && node.fs.existsSync(filePath)) {
+        try {
+          const raw = node.fs.readFileSync(filePath, "utf-8");
+          const list: CitizenRequestDoc[] = JSON.parse(raw);
+          if (Array.isArray(list)) {
+            list.forEach((r) => this.requestsMap.set(r.id, r));
+          }
+        } catch (e) {
+          console.warn("Server file DB read error:", e);
+        }
+      }
+    }
+  }
+
+  private persistRequests() {
+    const list = Array.from(this.requestsMap.values());
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(CITIZEN_REQUESTS_STORAGE_KEY, JSON.stringify(list));
+      } catch (e) {
+        console.warn("Local storage write error for citizen requests:", e);
+      }
+    } else {
+      const filePath = getLocalJsonDbPath();
+      const node = getNodeFs();
+      if (filePath && node) {
+        try {
+          node.fs.writeFileSync(filePath, JSON.stringify(list, null, 2), "utf-8");
+        } catch (e) {
+          console.warn("Server file DB write error:", e);
+        }
+      }
+    }
+  }
 
   // Credentials
   async saveUserCredential(cred: UserCredentialDoc): Promise<UserCredentialDoc> {
@@ -65,21 +147,26 @@ class LocalFirestoreStore {
 
   // Citizen Requests
   async saveCitizenRequest(req: CitizenRequestDoc): Promise<CitizenRequestDoc> {
+    this.loadPersistedRequests();
     this.requestsMap.set(req.id, req);
+    this.persistRequests();
     return req;
   }
 
   async getCitizenRequests(): Promise<CitizenRequestDoc[]> {
+    this.loadPersistedRequests();
     return Array.from(this.requestsMap.values()).sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   }
 
   async getCitizenRequestById(id: string): Promise<CitizenRequestDoc | undefined> {
+    this.loadPersistedRequests();
     return this.requestsMap.get(id);
   }
 
   async getCitizenRequestByTrackingId(trackingId: string): Promise<CitizenRequestDoc | undefined> {
+    this.loadPersistedRequests();
     const cleanId = trackingId.toUpperCase().trim();
     return Array.from(this.requestsMap.values()).find(
       (r) => r.trackingId.toUpperCase() === cleanId
@@ -90,11 +177,13 @@ class LocalFirestoreStore {
     trackingId: string,
     status: CitizenRequestDoc["status"]
   ): Promise<CitizenRequestDoc | undefined> {
+    this.loadPersistedRequests();
     const req = await this.getCitizenRequestByTrackingId(trackingId);
     if (!req) return undefined;
     req.status = status;
     req.updatedAt = new Date().toISOString();
     this.requestsMap.set(req.id, req);
+    this.persistRequests();
     return req;
   }
 

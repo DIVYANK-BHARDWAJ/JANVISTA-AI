@@ -1,23 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { VoiceRecorder } from "../citizen/VoiceRecorder";
 import { TextInput } from "../citizen/TextInput";
 import { CategoryBadge, UrgencyBadge } from "../ui/Badge";
 import { DataClassificationBadge } from "../ui/DataClassificationBadge";
 import { dataStore } from "@/lib/data/store";
-import { CitizenRequest } from "@/types";
-import { MessageSquare, CheckCircle2 } from "lucide-react";
+import { CitizenRequest, OfficerJurisdiction, UserRole } from "@/types";
+import { MessageSquare, CheckCircle2, Filter } from "lucide-react";
+
+interface DemandViewProps {
+  jurisdiction?: OfficerJurisdiction | null;
+  currentRole?: UserRole;
+}
 
 /**
  * DemandView Component (Official Light Government Theme)
  * Citizens express development needs via voice or text.
  * Shows Gemini structured request extraction and systemic demand clusters.
+ * Fully synchronized with persistent storage and District Collector filters.
  */
-export const DemandView: React.FC = () => {
+export const DemandView: React.FC<DemandViewProps> = ({ jurisdiction, currentRole }) => {
   const [requests, setRequests] = useState<CitizenRequest[]>(dataStore.getRequests());
   const [clusters] = useState(dataStore.getClusters());
   const [isLoading, setIsLoading] = useState(false);
   const [latestSubmission, setLatestSubmission] = useState<CitizenRequest | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<CitizenRequest | null>(null);
+  const [districtFilterOnly, setDistrictFilterOnly] = useState(false);
+
+  // Sync on mount and periodically check for new requests
+  useEffect(() => {
+    // 1. Instantly pull from dataStore (which checks localStorage on browser)
+    const stored = dataStore.getRequests();
+    setRequests(stored);
+
+    // 2. Fetch server /api/requests to merge any server-side database records
+    fetch("/api/requests")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          json.data.forEach((r: CitizenRequest) => dataStore.addRequest(r));
+          setRequests(dataStore.getRequests());
+        }
+      })
+      .catch((e) => console.warn("Failed to fetch /api/requests on mount:", e));
+  }, []);
 
   const handleNewInput = async (text: string) => {
     setIsLoading(true);
@@ -25,10 +50,15 @@ export const DemandView: React.FC = () => {
       const res = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({
+          text,
+          state: jurisdiction?.state || "Uttar Pradesh",
+          district: jurisdiction?.district || "Sitapur",
+        }),
       });
       const data = await res.json();
       if (data.success && data.data) {
+        dataStore.addRequest(data.data);
         setRequests(dataStore.getRequests());
         setLatestSubmission(data.data);
       }
@@ -38,6 +68,13 @@ export const DemandView: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const isDistrictCollector = currentRole === "DISTRICT_COLLECTOR" || Boolean(jurisdiction?.district);
+  const officerDistrict = jurisdiction?.district?.toLowerCase() || "";
+
+  const displayedRequests = districtFilterOnly && officerDistrict
+    ? requests.filter((r) => (r.district || "").toLowerCase() === officerDistrict)
+    : requests;
 
   return (
     <div className="space-y-6">
@@ -146,7 +183,7 @@ export const DemandView: React.FC = () => {
 
       {/* Complete Citizen Grievance Inspection Ledger (District Collectors & Policymakers) */}
       <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
               <MessageSquare className="w-4 h-4 text-amber-600" />
@@ -156,9 +193,38 @@ export const DemandView: React.FC = () => {
               Direct raw & Gemini-structured citizen grievances for District Collectorate & Policymaker action.
             </p>
           </div>
-          <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded border border-slate-200 self-start sm:self-auto">
-            {requests.length} Ingested Submissions
-          </span>
+          
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            {isDistrictCollector && officerDistrict && (
+              <div className="inline-flex rounded-md shadow-sm border border-slate-200 p-0.5 bg-slate-50 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setDistrictFilterOnly(false)}
+                  className={`px-2.5 py-1 rounded font-bold transition ${
+                    !districtFilterOnly
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  All Grievances ({requests.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDistrictFilterOnly(true)}
+                  className={`px-2.5 py-1 rounded font-bold transition ${
+                    districtFilterOnly
+                      ? "bg-emerald-700 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  My District: {jurisdiction?.district} ({requests.filter((r) => (r.district || "").toLowerCase() === officerDistrict).length})
+                </button>
+              </div>
+            )}
+            <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded border border-slate-200">
+              {displayedRequests.length} Ingested Submissions
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -176,14 +242,27 @@ export const DemandView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {requests.length === 0 ? (
+              {displayedRequests.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="p-8 text-center text-slate-500 font-medium">
-                    No citizen requests logged yet. Use the voice recorder or text form above to submit your first request!
+                    {districtFilterOnly && requests.length > 0 ? (
+                      <div className="space-y-2">
+                        <p>No citizen complaints lodged for <strong>{jurisdiction?.district}</strong> yet.</p>
+                        <p className="text-xs text-slate-400">({requests.length} complaints have been lodged in other districts / nationwide)</p>
+                        <button
+                          onClick={() => setDistrictFilterOnly(false)}
+                          className="mt-2 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded transition"
+                        >
+                          View All Nationwide Grievances ({requests.length})
+                        </button>
+                      </div>
+                    ) : (
+                      "No citizen requests logged yet. Use the voice recorder or text form above to submit your first request!"
+                    )}
                   </td>
                 </tr>
               ) : (
-                requests.map((req) => (
+                displayedRequests.map((req) => (
                   <tr key={req.id} className="hover:bg-slate-50 transition">
                     <td className="p-3 font-mono font-bold text-[#003366]">
                       {req.trackingId || req.id}

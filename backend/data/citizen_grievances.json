@@ -1,0 +1,48 @@
+[
+  {
+    "tracking_id": "JAN-2026-KA-43440",
+    "name": "Ravi Kumar",
+    "phone": "98176 32418",
+    "email": "ravi123@gmail.com",
+    "state": "Karnataka",
+    "district": "Haveri",
+    "village_or_ward": "Manjunatha layout",
+    "category": "Roads & Bridges",
+    "urgency": "CRITICAL",
+    "description": "Roads are Kaccha and cannot drive cars , etc on these roads.\nPlease take a serious action.",
+    "status": "FIELD_AUDIT_SCHEDULED",
+    "department": "District Roads & Bridges Administration",
+    "timestamp": "2026-09-25 18:15",
+    "user_submitted": true,
+    "official_remarks": [
+      {
+        "officer": "System Dispatcher",
+        "date": "2026-09-25 18:15",
+        "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
+      }
+    ]
+  },
+  {
+    "tracking_id": "JAN-2026-KA-72878",
+    "name": "Vikas",
+    "phone": "9036069228",
+    "email": "vikaseli20@gmail.com",
+    "state": "Karnataka",
+    "district": "Dharwad",
+    "village_or_ward": "Plot no 19 Hastinapur layout Keshwapur",
+    "category": "Healthcare",
+    "urgency": "CRITICAL",
+    "description": "No hospitals nearby , Old people need to walk for a long distance. Please take a serious action.",
+    "status": "IN_PROGRESS",
+    "department": "District Healthcare Administration",
+    "timestamp": "2026-09-25 15:25",
+    "user_submitted": true,
+    "official_remarks": [
+      {
+        "officer": "System Dispatcher",
+        "date": "2026-09-25 15:25",
+        "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
+      }
+    ]
+  }
+]
