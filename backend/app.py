@@ -1,3 +1,4 @@
+import datetime
 import re
 import sys
 from pathlib import Path
@@ -11,7 +12,7 @@ EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 # Basic mobile number validation pattern (allows optional +, digits, spaces, hyphens, 10-15 digits total)
 PHONE_REGEX = re.compile(r"^[+]?[0-9\s-]{10,15}$")
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 from flask_cors import CORS
 from data import (
     REGIONS,
@@ -36,6 +37,7 @@ from credentials import (
 )
 from priority_engine import calculate_priority_score
 from grievance_analytics import compute_national_analytics
+from export_service import get_brief_data, generate_brief_csv, generate_brief_pdf
 
 
 
@@ -94,6 +96,8 @@ def api_index():
             "/api/dashboard/hotspots",
             "/api/dashboard/pipeline",
             "/api/calculate-priority",
+            "/api/export/csv",
+            "/api/export/pdf",
         ]
     })
 
@@ -280,6 +284,66 @@ def get_dashboard_overview():
             "pipeline": PIPELINE_STAGES,
         }
     })
+
+
+@app.route("/api/export/csv", methods=["GET", "POST"])
+def export_brief_csv():
+    """
+    Exports a structured CSV ledger brief tailored to the requested governance role
+    ('District Collector', 'State Planner', or 'Policymaker') and jurisdiction.
+    """
+    params = request.get_json(silent=True) or {}
+    role = request.args.get("role") or params.get("role") or "Policymaker"
+    state = request.args.get("state") or params.get("state")
+    district = request.args.get("district") or params.get("district")
+    officer = request.args.get("officer") or params.get("officer")
+
+    brief_info = get_brief_data(role=role, state=state, district=district, officer_name=officer)
+    csv_content = generate_brief_csv(brief_info)
+
+    scope = brief_info["scope"]
+    target_name = (brief_info["district"] or brief_info["state"] or "national").lower().replace(" ", "_")
+    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+    filename = f"janvista_{scope}_{target_name}_brief_{ts}.csv"
+
+    return Response(
+        csv_content,
+        mimetype="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
+    )
+
+
+@app.route("/api/export/pdf", methods=["GET", "POST"])
+def export_brief_pdf():
+    """
+    Exports a high-resolution A4 Executive Briefing PDF tailored to the requested governance role
+    ('District Collector', 'State Planner', or 'Policymaker') and jurisdiction.
+    """
+    params = request.get_json(silent=True) or {}
+    role = request.args.get("role") or params.get("role") or "Policymaker"
+    state = request.args.get("state") or params.get("state")
+    district = request.args.get("district") or params.get("district")
+    officer = request.args.get("officer") or params.get("officer")
+
+    brief_info = get_brief_data(role=role, state=state, district=district, officer_name=officer)
+    pdf_bytes = generate_brief_pdf(brief_info)
+
+    scope = brief_info["scope"]
+    target_name = (brief_info["district"] or brief_info["state"] or "national").lower().replace(" ", "_")
+    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+    filename = f"janvista_{scope}_{target_name}_brief_{ts}.pdf"
+
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
+    )
 
 
 
