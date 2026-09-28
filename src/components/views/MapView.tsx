@@ -1,16 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IndiaMap } from "../map/IndiaMap";
 import { dataStore } from "@/lib/data/store";
 import { WhyThisCard } from "../ui/WhyThisCard";
+import { Hotspot, CitizenRequest, OfficerJurisdiction, AdministrativeRegion } from "@/types";
+import { filterByJurisdiction } from "@/lib/data/jurisdiction-filter";
+
+interface MapViewProps {
+  selectedState?: string;
+  jurisdiction?: OfficerJurisdiction | null;
+}
 
 /**
  * MapView Component (Official Light Government Theme)
- * Renders full-screen India geospatial decision workspace with district drilldown.
+ * Renders full-screen India geospatial decision workspace with district drilldown scoped by officer jurisdiction.
  */
-export const MapView: React.FC = () => {
-  const hotspots = dataStore.getHotspots();
-  const regions = dataStore.getRegions();
-  const [selectedRegionId, setSelectedRegionId] = useState<string>("reg-sitapur-up");
+export const MapView: React.FC<MapViewProps> = ({ selectedState, jurisdiction }) => {
+  const [hotspots, setHotspots] = useState<Hotspot[]>([]);
+  const [regions, setRegions] = useState<AdministrativeRegion[]>([]);
+  const [selectedRegionId, setSelectedRegionId] = useState<string>("");
+
+  const getRegionGeo = (regionId: string) => {
+    const r = dataStore.getRegionById(regionId);
+    return r ? { state: r.state, district: r.district } : undefined;
+  };
+
+  const refreshData = React.useCallback(() => {
+    const opts = { selectedState, jurisdiction };
+    const allRegs = filterByJurisdiction(dataStore.getRegions(), opts);
+    const list = filterByJurisdiction(dataStore.getHotspots(), opts, getRegionGeo);
+
+    setRegions(allRegs);
+    setHotspots(list);
+
+    if (allRegs.length > 0 && (!selectedRegionId || !allRegs.some((r) => r.id === selectedRegionId))) {
+      setSelectedRegionId(allRegs[0].id);
+    }
+  }, [selectedState, jurisdiction, selectedRegionId]);
+
+  useEffect(() => {
+    refreshData();
+    fetch("/api/requests")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          json.data.forEach((r: CitizenRequest) => dataStore.addRequest(r));
+          refreshData();
+        }
+      })
+      .catch((e) => console.warn("Map sync notice:", e));
+
+    window.addEventListener("janvista_data_updated", refreshData);
+    return () => window.removeEventListener("janvista_data_updated", refreshData);
+  }, [refreshData]);
 
   const selectedRegion = dataStore.getRegionById(selectedRegionId);
   const selectedScore = dataStore.getPriorityScoreByRegion(selectedRegionId);

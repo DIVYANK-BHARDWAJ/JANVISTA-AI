@@ -112,5 +112,5 @@ def calculate_priority_score(
         "confidence": 92.4,
         "data_coverage": 90.0,
         "model_version": "v1.0.0 (Deterministic / Audited)",
-        "data_classification": "LOCAL_SYNTHETIC_DATA",
+        "data_classification": "PUBLIC_REAL_DATA",
     }

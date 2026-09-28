@@ -8,6 +8,7 @@ import { CitizenRequest, OfficerJurisdiction, UserRole } from "@/types";
 import { MessageSquare, CheckCircle2, Filter } from "lucide-react";
 
 interface DemandViewProps {
+  selectedState?: string;
   jurisdiction?: OfficerJurisdiction | null;
   currentRole?: UserRole;
 }

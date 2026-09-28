@@ -1,6 +1,6 @@
 /**
  * JANVISTA AI — Google Gemini Regional AI & Structured Extraction Engine
- * Powered 100% by Google Generative AI (gemini-1.5-flash)
+ * Powered 100% by Google Generative AI Cascade (gemini-2.0-flash -> gemini-1.5-flash-8b -> gemini-1.5-flash)
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -9,12 +9,38 @@ import { fallbackExtractRequest, StructuredExtractionResult } from "./fallback";
 const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
+// Multi-model fallback cascade to maximize free tier rate limits and performance
+const MODEL_CASCADE = ["gemini-2.0-flash", "gemini-1.5-flash-8b", "gemini-1.5-flash"];
+
 export interface GeminiMultilingualTranslationResult {
   originalText: string;
   detectedLanguage: string;
   englishTranslation: string;
   hindiTranslation: string;
   extractedEntities: string[];
+}
+
+/**
+ * Execute Gemini prompt with automatic model cascade fallback
+ */
+async function generateWithGeminiCascade(prompt: string): Promise<string> {
+  if (!genAI || !apiKey) {
+    throw new Error("No Gemini API key configured.");
+  }
+
+  let lastError: any = null;
+  for (const modelName of MODEL_CASCADE) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      if (text) return text;
+    } catch (err: any) {
+      console.warn(`[GEMINI CASCADE] Model ${modelName} failed or rate limited, falling back:`, err?.message || err);
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("All Gemini cascade models failed.");
 }
 
 /**
@@ -28,9 +54,7 @@ export async function extractCitizenRequestWithGemini(
     return fallbackExtractRequest(text, language);
   }
 
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `
+  const prompt = `
 You are the JANVISTA AI Citizen Intelligence Engine developed by Google.
 Analyze the following regional Indian language citizen request and extract structured JSON matching this schema:
 {
@@ -45,18 +69,26 @@ Analyze the following regional Indian language citizen request and extract struc
   "summary": string
 }
 
+IMPORTANT CATEGORY CLASSIFICATION RULES:
+1. "transportation": Potholes, road damage, potholes in Hindi ("गड्ढे", "गड्ढा", "गड्डा"), road ("सड़क", "रास्ता"), traffic, bridges ("पुल", "फ्лайओवर").
+2. "water_sanitation": Water supply ("पानी", "जल"), pipe leaks ("पाइपलाइन"), sewage ("सीवर", "नाली").
+3. "education": School ("स्कूल"), college ("कॉलेज"), teachers, education ("शिक्षा").
+4. "energy": Electricity ("बिजली"), power outage, transformer ("ट्रांसफॉर्मर").
+5. "healthcare": Hospital ("अस्पताल"), doctor, medicines ("दवा"), disease, patients.
+6. "digital_infra": Internet, mobile network ("नेटवर्क", "टावर", "इंटरनेट").
+
 Citizen Request Text: "${text}"
 Input Language Code: "${language}"
 
 Return ONLY valid raw JSON without markdown markers.
 `;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+  try {
+    const responseText = await generateWithGeminiCascade(prompt);
     const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(cleanJson) as StructuredExtractionResult;
   } catch (error) {
-    console.warn("[GOOGLE GEMINI AI] Exception or missing API key, using deterministic fallback:", error);
+    console.warn("[GOOGLE GEMINI AI] All models in cascade failed or exhausted, using deterministic fallback:", error);
     return fallbackExtractRequest(text, language);
   }
 }
@@ -80,9 +112,7 @@ export async function translateRegionalLanguageWithGemini(
     return defaultResult;
   }
 
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `
+  const prompt = `
 You are the Google Gemini Regional Language Intelligence Model.
 Translate the following citizen prompt into standard English and Hindi, and extract key location/infrastructure entities.
 
@@ -99,12 +129,12 @@ Respond ONLY with valid JSON in this exact structure:
 }
 `;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+  try {
+    const responseText = await generateWithGeminiCascade(prompt);
     const cleanJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(cleanJson) as GeminiMultilingualTranslationResult;
   } catch (err) {
-    console.warn("[GOOGLE GEMINI TRANSLATION] Error during translation:", err);
+    console.warn("[GOOGLE GEMINI TRANSLATION] Error during translation cascade:", err);
     return defaultResult;
   }
 }

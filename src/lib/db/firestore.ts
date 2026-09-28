@@ -23,9 +23,9 @@ const CITIZEN_REQUESTS_STORAGE_KEY = "janvista_db_citizen_requests";
 function getNodeFs() {
   if (typeof window === "undefined") {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // eslint-disable-next-line
       const fs = require("fs");
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // eslint-disable-next-line
       const path = require("path");
       return { fs, path };
     } catch {

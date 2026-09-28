@@ -11,7 +11,7 @@ export async function processAskJanvistaQuery(question: string): Promise<PolicyQ
 
   // Step 1: Query Live Google Cloud Firestore database records
   const realRequests = await GoogleFirestoreDatabaseService.getCitizenRequests();
-  const realCount = realRequests.length > 0 ? realRequests.length : 8421;
+  const realCount = realRequests.length;
 
   let regionId = "reg-sitapur-up";
   if (lower.includes("muzaffarpur") || lower.includes("bihar")) regionId = "reg-muzaffarpur-br";
@@ -56,9 +56,7 @@ export async function processAskJanvistaQuery(question: string): Promise<PolicyQ
   let generativeExplanation = `Based on JANVISTA deterministic analysis (Priority Model v1.0.0) grounded in Google Cloud Firestore data, ${region.name} (${region.state}) ranks #1 due to a calculated Priority Score of ${prio?.score || 89.4}/100. Key contributing signals: ${realCount.toLocaleString()} citizen demand signals (30% weight), an Infrastructure Gap Index of ${gaps[0]?.gapIndex || 91.2}/100 (25% weight), and high emergency access deficit. Final intervention authorization requires official government human review.`;
 
   if (genAI && apiKey) {
-    try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const prompt = `
+    const prompt = `
 You are Ask JANVISTA, the grounded AI assistant developed by Google for India's National Vision & Infrastructure Strategic Targeting Assistant.
 Answer the policymaker's question strictly grounded in the provided factual Google Cloud Firestore database records.
 
@@ -75,10 +73,20 @@ GROUNDED DATA FROM GOOGLE FIRESTORE:
 
 Provide a crisp 3-4 sentence evidence-backed explanation. Always clarify that final decisions require authorized human review.
 `;
-      const res = await model.generateContent(prompt);
-      generativeExplanation = res.response.text();
-    } catch (e) {
-      console.warn("[ASK JANVISTA] Google Gemini RAG query fallback:", e);
+
+    const MODEL_CASCADE = ["gemini-2.0-flash", "gemini-1.5-flash-8b", "gemini-1.5-flash"];
+    for (const modelName of MODEL_CASCADE) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const res = await model.generateContent(prompt);
+        const text = res.response.text();
+        if (text) {
+          generativeExplanation = text;
+          break;
+        }
+      } catch (e: any) {
+        console.warn(`[ASK JANVISTA] Model ${modelName} failed or rate limited:`, e?.message || e);
+      }
     }
   }
 

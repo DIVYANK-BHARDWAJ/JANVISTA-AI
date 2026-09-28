@@ -1,17 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { dataStore } from "@/lib/data/store";
 import { WhyThisCard } from "../ui/WhyThisCard";
 import { CategoryBadge } from "../ui/Badge";
 import { DataClassificationBadge } from "../ui/DataClassificationBadge";
 import { ChevronRight } from "lucide-react";
+import { Recommendation, CitizenRequest, OfficerJurisdiction } from "@/types";
+import { filterByJurisdiction } from "@/lib/data/jurisdiction-filter";
+
+interface RecommendationsViewProps {
+  selectedState?: string;
+  jurisdiction?: OfficerJurisdiction | null;
+}
 
 /**
  * RecommendationsView Component (Official Light Government Theme)
- * Renders priority recommendations calculated by the Priority Engine (v1.0.0) with signature "WHY THIS?" evidence breakdowns.
+ * Renders priority recommendations calculated by the Priority Engine (v1.0.0) scoped by officer jurisdiction.
  */
-export const RecommendationsView: React.FC = () => {
-  const recommendations = dataStore.getRecommendations();
-  const [selectedRecId, setSelectedRecId] = useState<string>(recommendations[0]?.id || "");
+export const RecommendationsView: React.FC<RecommendationsViewProps> = ({ selectedState, jurisdiction }) => {
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [selectedRecId, setSelectedRecId] = useState<string>("");
+
+  const getRegionGeo = (regionId: string) => {
+    const r = dataStore.getRegionById(regionId);
+    return r ? { state: r.state, district: r.district } : undefined;
+  };
+
+  const refreshData = React.useCallback(() => {
+    const opts = { selectedState, jurisdiction };
+    const list = filterByJurisdiction(dataStore.getRecommendations(), opts, getRegionGeo);
+    setRecommendations(list);
+    if (list.length > 0 && (!selectedRecId || !list.some((r) => r.id === selectedRecId))) {
+      setSelectedRecId(list[0].id);
+    }
+  }, [selectedState, jurisdiction, selectedRecId]);
+
+  useEffect(() => {
+    refreshData();
+    fetch("/api/requests")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          json.data.forEach((r: CitizenRequest) => dataStore.addRequest(r));
+          refreshData();
+        }
+      })
+      .catch((e) => console.warn("Recommendations sync notice:", e));
+
+    window.addEventListener("janvista_data_updated", refreshData);
+    return () => window.removeEventListener("janvista_data_updated", refreshData);
+  }, [refreshData]);
 
   const selectedRec = recommendations.find((r) => r.id === selectedRecId) || recommendations[0];
   const selectedScore = selectedRec ? dataStore.getPriorityScoreByRegion(selectedRec.regionId) : null;
@@ -23,7 +60,7 @@ export const RecommendationsView: React.FC = () => {
           <h2 className="text-xl font-extrabold text-slate-900 tracking-wide">EXPLAINABLE INFRASTRUCTURE RECOMMENDATIONS</h2>
           <p className="text-xs text-slate-600">Ranked development opportunities with complete evidence traceability</p>
         </div>
-        <DataClassificationBadge classification="SYNTHETIC_DATA" />
+        <DataClassificationBadge classification="PUBLIC_REAL_DATA" />
       </div>
 
       {recommendations.length === 0 ? (

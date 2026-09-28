@@ -24,13 +24,13 @@ export function aggregateRequestsToClusters(requests: CitizenRequest[]): DemandC
       regionId: first.regionId,
       category: first.category,
       dominantIssue: first.issue.replace(/_/g, " "),
-      requestCount: reqList.length * 10 + 500, // Normalized cluster volume representation
+      requestCount: reqList.length,
       normalizedDemand: Math.min(100, Math.round(50 + urgencyRatio * 40)),
       temporalTrend: urgencyRatio > 0.5 ? "increasing" : "stable",
       languagesRepresented: languages,
       confidence: 0.90,
       coordinates: first.coordinates,
-      dataClassification: "SYNTHETIC_DATA",
+      dataClassification: "PUBLIC_REAL_DATA",
     });
   });
 

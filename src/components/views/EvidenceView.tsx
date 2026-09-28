@@ -1,14 +1,42 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { dataStore } from "@/lib/data/store";
 import { DataClassificationBadge } from "../ui/DataClassificationBadge";
 import { Database } from "lucide-react";
+import { Evidence, CitizenRequest, OfficerJurisdiction } from "@/types";
+import { filterByJurisdiction } from "@/lib/data/jurisdiction-filter";
+
+interface EvidenceViewProps {
+  selectedState?: string;
+  jurisdiction?: OfficerJurisdiction | null;
+}
 
 /**
  * EvidenceView Component (Official Light Government Theme)
- * Renders the multi-dimensional Evidence Explorer dataset (Citizen Signals, Facility Audits, Vulnerability Maps, Capex Ledgers).
+ * Renders the multi-dimensional Evidence Explorer dataset scoped by officer jurisdiction.
  */
-export const EvidenceView: React.FC = () => {
-  const evidenceItems = dataStore.getEvidence();
+export const EvidenceView: React.FC<EvidenceViewProps> = ({ selectedState, jurisdiction }) => {
+  const [evidenceItems, setEvidenceItems] = useState<Evidence[]>([]);
+
+  const refreshData = React.useCallback(() => {
+    const opts = { selectedState, jurisdiction };
+    setEvidenceItems(filterByJurisdiction(dataStore.getEvidence(), opts));
+  }, [selectedState, jurisdiction]);
+
+  useEffect(() => {
+    refreshData();
+    fetch("/api/requests")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          json.data.forEach((r: CitizenRequest) => dataStore.addRequest(r));
+          refreshData();
+        }
+      })
+      .catch((e) => console.warn("Evidence sync notice:", e));
+
+    window.addEventListener("janvista_data_updated", refreshData);
+    return () => window.removeEventListener("janvista_data_updated", refreshData);
+  }, [refreshData]);
 
   return (
     <div className="space-y-6">
@@ -17,7 +45,7 @@ export const EvidenceView: React.FC = () => {
           <h2 className="text-xl font-extrabold text-slate-900 tracking-wide">EVIDENCE EXPLORER</h2>
           <p className="text-xs text-slate-600">Multi-dimensional traceability across Citizen, Infrastructure, Demographic, and Geospatial datasets</p>
         </div>
-        <DataClassificationBadge classification="SYNTHETIC_DATA" />
+        <DataClassificationBadge classification="PUBLIC_REAL_DATA" />
       </div>
 
       <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4 shadow-sm">

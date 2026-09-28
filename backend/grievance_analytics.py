@@ -30,6 +30,45 @@ URGENCY_WEIGHTS = {
     "LOW": 0.10,
 }
 
+def classify_grievance_text(text: str) -> Dict[str, Optional[str]]:
+    """
+    Automated NLP Urgency & Intent Model.
+    Analyzes raw citizen grievance text in English or regional languages to extract:
+    - Urgency: CRITICAL, HIGH, MODERATE, LOW
+    - Inferred Category: Healthcare, Drinking Water, Roads & Bridges, Electricity & Solar, Sanitation & Waste, Others
+    """
+    lower = (text or "").lower()
+
+    critical_keywords = [
+        "landslide", "landslides", "accident", "accidents", "die", "dying", "death",
+        "emergency", "critical", "no hospital", "no doctors", "trauma", "icu",
+        "casualty", "flooding", "collapsed", "poison", "contamination", "severe"
+    ]
+    high_keywords = [
+        "urgent", "broken", "kaccha", "bad road", "no water", "shortage", "walk long distance",
+        "hardship", "hazard", "problem", "issue", "damage", "dangerous"
+    ]
+
+    urgency = "MODERATE"
+    if any(k in lower for k in critical_keywords):
+        urgency = "CRITICAL"
+    elif any(k in lower for k in high_keywords):
+        urgency = "HIGH"
+
+    category = None
+    if any(k in lower for k in ["hospital", "doctor", "health", "medicine", "medical", "patient", "trauma", "clinic"]):
+        category = "Healthcare"
+    elif any(k in lower for k in ["water", "pipe", "drinking", "aquifer", "fluoride", "borewell", "tanker"]):
+        category = "Drinking Water"
+    elif any(k in lower for k in ["road", "roads", "bridge", "kaccha", "traffic", "pothole", "transport", "highway"]):
+        category = "Roads & Bridges"
+    elif any(k in lower for k in ["power", "electricity", "light", "solar", "grid", "feeder", "transformer"]):
+        category = "Electricity & Solar"
+    elif any(k in lower for k in ["drainage", "sewer", "sanitation", "garbage", "effluent", "waste"]):
+        category = "Sanitation & Waste"
+
+    return {"urgency": urgency, "category": category}
+
 # Normalisation base: what "100 grievances" maps to on the demand signal (0-100)
 # Keeps the scale meaningful even for small districts with few submissions.
 DEMAND_NORM_BASE = 50   # 50 grievances → ~50 points on the demand axis
@@ -125,9 +164,21 @@ DEFAULT_TEMPLATE = {
 # Core Helpers
 # ---------------------------------------------------------------------------
 
-def _urgency_score(urgency_str: str) -> float:
-    """Returns the numeric weight for a given urgency string."""
-    return URGENCY_WEIGHTS.get((urgency_str or "MODERATE").strip().upper(), 0.35)
+def _urgency_score(urgency_input: Any) -> float:
+    """Returns the numeric weight for a given urgency string or grievance dict using NLP text classification."""
+    if isinstance(urgency_input, dict):
+        stated = (urgency_input.get("urgency") or "MODERATE").strip().upper()
+        if stated == "CRITICAL":
+            return URGENCY_WEIGHTS["CRITICAL"]
+        desc = urgency_input.get("description", "")
+        nlp_res = classify_grievance_text(desc)
+        if nlp_res["urgency"] == "CRITICAL":
+            return URGENCY_WEIGHTS["CRITICAL"]
+        if stated in URGENCY_WEIGHTS:
+            return URGENCY_WEIGHTS[stated]
+        return URGENCY_WEIGHTS.get(nlp_res["urgency"], 0.35)
+    
+    return URGENCY_WEIGHTS.get((str(urgency_input) or "MODERATE").strip().upper(), 0.35)
 
 
 def _normalize_demand(count: int, base: int = DEMAND_NORM_BASE) -> float:

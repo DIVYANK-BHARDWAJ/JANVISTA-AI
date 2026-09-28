@@ -65,6 +65,17 @@ export interface CitizenRequest {
   evidenceId?: string;
 }
 
+export interface DemographicProfile {
+  literacyRate: number; // e.g. 78.5 (%)
+  scStPercentage: number; // e.g. 21.4 (%)
+  bplPercentage: number; // e.g. 28.2 (%)
+  genderRatio: number; // e.g. 918 (females per 1000 males)
+  workforceParticipation: number; // e.g. 42.1 (%)
+  ruralPopulationPercentage: number; // e.g. 68.0 (%)
+  medianAge: number; // e.g. 26
+  primaryLanguages: string[]; // e.g. ["Hindi", "Haryanvi"]
+}
+
 export interface AdministrativeRegion {
   id: string;
   name: string;
@@ -75,6 +86,7 @@ export interface AdministrativeRegion {
   vulnerabilityIndex: number; // 0-100
   accessibilityIndex: number; // 0-100
   coordinates: LocationCoordinates;
+  demographics?: DemographicProfile;
   bounds?: {
     north: number;
     south: number;
@@ -167,6 +179,9 @@ export interface Evidence {
   geographicScope: string;
   value: string | number;
   confidence: number;
+  state?: string;
+  district?: string;
+  regionId?: string;
   metadata?: Record<string, unknown>;
 }
 

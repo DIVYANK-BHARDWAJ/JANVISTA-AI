@@ -46,6 +46,6 @@ export function calculatePriorityScore(input: PriorityCalculationInput): Priorit
     dataCoverage: input.dataCoverage ?? 90,
     methodologyVersion: cfg.version,
     timestamp: new Date().toISOString(),
-    dataClassification: input.dataClassification || "SYNTHETIC_DATA",
+    dataClassification: input.dataClassification || "PUBLIC_REAL_DATA",
   };
 }

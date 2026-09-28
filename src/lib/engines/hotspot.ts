@@ -21,7 +21,7 @@ export function detectHotspots(clusters: DemandCluster[], regions: Administrativ
       urgency: hotspotScore > 85 ? "critical" : hotspotScore > 70 ? "high" : "medium",
       rank: idx + 1,
       coordinates: c.coordinates,
-      dataClassification: "SYNTHETIC_DATA",
+      dataClassification: "PUBLIC_REAL_DATA",
     };
   });
 

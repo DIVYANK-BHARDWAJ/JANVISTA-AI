@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { KpiCard } from "../ui/KpiCard";
 import { WhyThisCard } from "../ui/WhyThisCard";
 import { DataClassificationBadge } from "../ui/DataClassificationBadge";
@@ -13,23 +13,58 @@ import {
 } from "lucide-react";
 import { dataStore } from "@/lib/data/store";
 import { NavTab } from "../navigation/Sidebar";
+import { CitizenRequest, DemandCluster, Hotspot, InfrastructureGap, PriorityScore, Recommendation, OfficerJurisdiction } from "@/types";
+import { filterByJurisdiction } from "@/lib/data/jurisdiction-filter";
 
 interface Props {
   onNavigate: (tab: NavTab) => void;
+  selectedState?: string;
+  jurisdiction?: OfficerJurisdiction | null;
 }
 
 /**
  * OverviewView Component (Neutral Slate Theme - No Blue)
  * Answers: "WHERE SHOULD WE ACT FIRST?"
- * Displays national metrics, official priority spotlight, and national decision pipeline.
+ * Displays national metrics, official priority spotlight, and decision pipeline scoped by officer jurisdiction.
  */
-export const OverviewView: React.FC<Props> = ({ onNavigate }) => {
-  const requests = dataStore.getRequests();
-  const clusters = dataStore.getClusters();
-  const hotspots = dataStore.getHotspots();
-  const gaps = dataStore.getGaps();
-  const priorityScores = dataStore.getPriorityScores();
-  const recs = dataStore.getRecommendations();
+export const OverviewView: React.FC<Props> = ({ onNavigate, selectedState, jurisdiction }) => {
+  const [requests, setRequests] = useState<CitizenRequest[]>([]);
+  const [clusters, setClusters] = useState<DemandCluster[]>([]);
+  const [hotspots, setHotspots] = useState<Hotspot[]>([]);
+  const [gaps, setGaps] = useState<InfrastructureGap[]>([]);
+  const [priorityScores, setPriorityScores] = useState<PriorityScore[]>([]);
+  const [recs, setRecs] = useState<Recommendation[]>([]);
+
+  const getRegionGeo = (regionId: string) => {
+    const r = dataStore.getRegionById(regionId);
+    return r ? { state: r.state, district: r.district } : undefined;
+  };
+
+  const refreshData = React.useCallback(() => {
+    const opts = { selectedState, jurisdiction };
+    setRequests(filterByJurisdiction(dataStore.getRequests(), opts, getRegionGeo));
+    setClusters(filterByJurisdiction(dataStore.getClusters(), opts, getRegionGeo));
+    setHotspots(filterByJurisdiction(dataStore.getHotspots(), opts, getRegionGeo));
+    setGaps(filterByJurisdiction(dataStore.getGaps(), opts, getRegionGeo));
+    setPriorityScores(filterByJurisdiction(dataStore.getPriorityScores(), opts, getRegionGeo));
+    setRecs(filterByJurisdiction(dataStore.getRecommendations(), opts, getRegionGeo));
+  }, [selectedState, jurisdiction]);
+
+  useEffect(() => {
+    refreshData();
+    fetch("/api/requests")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          json.data.forEach((r: CitizenRequest) => dataStore.addRequest(r));
+          refreshData();
+        }
+      })
+      .catch((e) => console.warn("Overview sync notice:", e));
+
+    window.addEventListener("janvista_data_updated", refreshData);
+    return () => window.removeEventListener("janvista_data_updated", refreshData);
+  }, [refreshData]);
 
   const topRec = recs.length > 0 ? recs[0] : null;
   const sitapurScore = topRec ? dataStore.getPriorityScoreByRegion(topRec.regionId) : null;
@@ -117,8 +152,8 @@ export const OverviewView: React.FC<Props> = ({ onNavigate }) => {
       </div>
 
 
-      {/* Priority Opportunity Spotlight */}
-      {topRec && sitapurScore && (
+      {/* Priority Opportunity Spotlight or Empty State */}
+      {topRec && sitapurScore ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5">
@@ -140,6 +175,25 @@ export const OverviewView: React.FC<Props> = ({ onNavigate }) => {
             regionName={topRec.regionName}
             categoryName={topRec.category}
           />
+        </div>
+      ) : (
+        <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-8 text-center space-y-3">
+          <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mx-auto text-slate-700">
+            <MessageSquare className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900">
+            No Citizen Requests Logged for {jurisdiction?.displayName || (selectedState && selectedState !== "All India" ? selectedState : "Selected Jurisdiction")} Yet
+          </h3>
+          <p className="text-xs text-slate-600 max-w-lg mx-auto leading-relaxed">
+            Priority scores, demand clusters, infrastructure gap indices, and hotspot recommendations are computed in real time <strong>only after local citizens submit requests</strong> from this jurisdiction.
+          </p>
+          <button
+            onClick={() => onNavigate("citizen-portal")}
+            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow inline-flex items-center space-x-2 transition"
+          >
+            <MessageSquare className="w-4 h-4 text-amber-400" />
+            <span>Submit Citizen Request for {selectedState && selectedState !== "All India" ? selectedState : "Jurisdiction"}</span>
+          </button>
         </div>
       )}
 

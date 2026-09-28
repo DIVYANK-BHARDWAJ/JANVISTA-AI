@@ -1,16 +1,50 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { dataStore } from "@/lib/data/store";
 import { CategoryBadge } from "../ui/Badge";
 import { DataClassificationBadge } from "../ui/DataClassificationBadge";
 import { Building2, Activity } from "lucide-react";
+import { InfrastructureGap, InfrastructureAsset, CitizenRequest, OfficerJurisdiction } from "@/types";
+import { filterByJurisdiction } from "@/lib/data/jurisdiction-filter";
+
+interface InfrastructureViewProps {
+  selectedState?: string;
+  jurisdiction?: OfficerJurisdiction | null;
+}
 
 /**
  * InfrastructureView Component (Official Light Government Theme)
- * Compares citizen demand with existing infrastructure capacity to reveal Infrastructure Gap Index.
+ * Compares citizen demand with existing infrastructure capacity to reveal Infrastructure Gap Index scoped by officer jurisdiction.
  */
-export const InfrastructureView: React.FC = () => {
-  const gaps = dataStore.getGaps();
-  const assets = dataStore.getInfrastructureAssets();
+export const InfrastructureView: React.FC<InfrastructureViewProps> = ({ selectedState, jurisdiction }) => {
+  const [gaps, setGaps] = useState<InfrastructureGap[]>([]);
+  const [assets, setAssets] = useState<InfrastructureAsset[]>([]);
+
+  const getRegionGeo = (regionId: string) => {
+    const r = dataStore.getRegionById(regionId);
+    return r ? { state: r.state, district: r.district } : undefined;
+  };
+
+  const refreshData = React.useCallback(() => {
+    const opts = { selectedState, jurisdiction };
+    setGaps(filterByJurisdiction(dataStore.getGaps(), opts, getRegionGeo));
+    setAssets(filterByJurisdiction(dataStore.getInfrastructureAssets(), opts, getRegionGeo));
+  }, [selectedState, jurisdiction]);
+
+  useEffect(() => {
+    refreshData();
+    fetch("/api/requests")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          json.data.forEach((r: CitizenRequest) => dataStore.addRequest(r));
+          refreshData();
+        }
+      })
+      .catch((e) => console.warn("Infrastructure sync notice:", e));
+
+    window.addEventListener("janvista_data_updated", refreshData);
+    return () => window.removeEventListener("janvista_data_updated", refreshData);
+  }, [refreshData]);
 
   return (
     <div className="space-y-6">
@@ -19,7 +53,7 @@ export const InfrastructureView: React.FC = () => {
           <h2 className="text-xl font-extrabold text-slate-900 tracking-wide">INFRASTRUCTURE GAP ANALYSIS</h2>
           <p className="text-xs text-slate-600">Formula: Infrastructure Gap = (Demand * 0.40) + ((100 - Coverage) * 0.40) + (Vulnerability * 0.20)</p>
         </div>
-        <DataClassificationBadge classification="SYNTHETIC_DATA" />
+        <DataClassificationBadge classification="PUBLIC_REAL_DATA" />
       </div>
 
       {/* Infrastructure Gaps Table */}

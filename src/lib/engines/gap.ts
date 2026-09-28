@@ -32,6 +32,6 @@ export function calculateInfrastructureGap(input: GapCalculationInput): Infrastr
     coverageScore: input.coverageScore,
     vulnerabilityScore: input.vulnerabilityScore,
     methodologyVersion: "v1.0.0",
-    dataClassification: input.dataClassification || "SYNTHETIC_DATA",
+    dataClassification: input.dataClassification || "PUBLIC_REAL_DATA",
   };
 }

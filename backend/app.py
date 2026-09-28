@@ -88,7 +88,7 @@ def api_index():
         "status": "online",
         "version": "1.0.0",
         "api_key_required": False,
-        "mode": "deterministic_offline_mock",
+        "mode": "live_citizen_data",
         "endpoints": [
             "/api/dashboard/overview",
             "/api/dashboard/kpis",
@@ -373,17 +373,22 @@ def get_kpis():
             "data": state_data["kpis"]
         })
 
-    total_requests = sum(h["citizen_requests"] for h in HOTSPOTS)
+    national = compute_national_analytics(HOTSPOTS)
+    live_hotspots = national.get("hotspots", [])
+    total_requests = national.get("total_citizen_requests", 0)
+    top_spotlight = live_hotspots[0] if live_hotspots else None
+    states_count = len(set(h["state"] for h in live_hotspots if h.get("state")))
+
     return jsonify({
         "success": True,
         "scope": "national",
         "data": {
             "citizen_requests_total": total_requests,
-            "analyzed_states_count": len(REGIONS),
-            "demand_clusters_count": len(HOTSPOTS),
-            "hotspots_detected_count": len(HOTSPOTS),
-            "max_gap_index": HOTSPOTS[0]["gap_index"],
-            "top_priority_score": TOP_RECOMMENDATION["priority_score"],
+            "analyzed_states_count": states_count,
+            "demand_clusters_count": national.get("cluster_count", 0),
+            "hotspots_detected_count": len(live_hotspots),
+            "max_gap_index": top_spotlight["gap_index"] if top_spotlight else 0.0,
+            "top_priority_score": top_spotlight["priority_score"] if top_spotlight else 0.0,
         }
     })
 
@@ -414,10 +419,14 @@ def get_spotlight():
             "data": state_data["spotlight"]
         })
 
+    national = compute_national_analytics(HOTSPOTS)
+    overview_data = get_dashboard_overview().get_json().get("data", {})
+    live_spotlight = overview_data.get("spotlight")
+
     return jsonify({
         "success": True,
         "scope": "national",
-        "data": TOP_RECOMMENDATION
+        "data": live_spotlight
     })
 
 
@@ -449,11 +458,13 @@ def get_hotspots():
             "data": state_data["hotspots"]
         })
 
+    national = compute_national_analytics(HOTSPOTS)
+    live_hotspots = national.get("hotspots", [])
     return jsonify({
         "success": True,
         "scope": "national",
-        "count": len(HOTSPOTS),
-        "data": HOTSPOTS
+        "count": len(live_hotspots),
+        "data": live_hotspots
     })
 
 

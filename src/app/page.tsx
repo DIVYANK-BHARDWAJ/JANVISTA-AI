@@ -131,16 +131,16 @@ export default function Home() {
 
         {/* Tab View Container */}
         <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-6 overflow-y-auto">
-          {activeTab === "overview" && <OverviewView onNavigate={setActiveTab} />}
-          {activeTab === "map" && <MapView />}
-          {activeTab === "demand" && <DemandView jurisdiction={jurisdiction} currentRole={currentRole} />}
+          {activeTab === "overview" && <OverviewView selectedState={selectedState} jurisdiction={jurisdiction} onNavigate={setActiveTab} />}
+          {activeTab === "map" && <MapView selectedState={selectedState} jurisdiction={jurisdiction} />}
+          {activeTab === "demand" && <DemandView selectedState={selectedState} jurisdiction={jurisdiction} currentRole={currentRole} />}
           {activeTab === "citizen-portal" && (
             <CitizenPortalView onSwitchPortal={() => setViewMode("gateway")} />
           )}
-          {activeTab === "hotspots" && <HotspotsView />}
-          {activeTab === "infrastructure" && <InfrastructureView />}
-          {activeTab === "recommendations" && <RecommendationsView />}
-          {activeTab === "evidence" && <EvidenceView />}
+          {activeTab === "hotspots" && <HotspotsView selectedState={selectedState} jurisdiction={jurisdiction} />}
+          {activeTab === "infrastructure" && <InfrastructureView selectedState={selectedState} jurisdiction={jurisdiction} />}
+          {activeTab === "recommendations" && <RecommendationsView selectedState={selectedState} jurisdiction={jurisdiction} />}
+          {activeTab === "evidence" && <EvidenceView selectedState={selectedState} jurisdiction={jurisdiction} />}
           {activeTab === "simulator" && <SimulatorView />}
           {activeTab === "ask-janvista" && <AskJanvistaView />}
         </main>
