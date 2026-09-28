@@ -729,19 +729,6 @@
                 </div>
               </div>
 
-              <!-- Action Buttons -->
-              <div class="d-flex flex-wrap gap-2">
-                <button
-                  class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-bold d-inline-flex align-items-center gap-1.5"
-                  data-bs-toggle="modal" data-bs-target="#actionModal" id="btnApproveInPrinciple">
-                  <i class="bi bi-check2-circle"></i> Approve In-Principle
-                </button>
-                <button
-                  class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1.5"
-                  data-bs-toggle="modal" data-bs-target="#evidenceModal" id="btnViewEvidenceChain">
-                  <i class="bi bi-journal-text"></i> View Evidence Chain
-                </button>
-              </div>
             </div>
 
             <!-- Right Column: "Why This?" Mathematical Breakdown -->
@@ -1270,25 +1257,28 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body py-3 fs-7">
-          <p class="text-secondary mb-3" id="exportModalSubtitle">Choose format to export national infrastructure decision report:</p>
+          <p class="text-secondary mb-3" id="exportModalSubtitle">Choose format to export national infrastructure
+            decision report:</p>
           <div class="d-grid gap-2">
             <button
               class="btn btn-outline-dark text-start p-2.5 rounded-3 d-flex align-items-center justify-content-between"
-              id="btnExportPdf"
-              type="button">
-              <span id="exportPdfLabel"><i class="bi bi-file-pdf-fill text-danger me-2"></i> PDF Executive Briefing (A4)</span>
+              id="btnExportPdf" type="button">
+              <span id="exportPdfLabel"><i class="bi bi-file-pdf-fill text-danger me-2"></i> PDF Executive Briefing
+                (A4)</span>
               <span id="exportPdfStatus"><i class="bi bi-chevron-right text-secondary"></i></span>
             </button>
             <button
               class="btn btn-outline-dark text-start p-2.5 rounded-3 d-flex align-items-center justify-content-between"
-              id="btnExportCsv"
-              type="button">
-              <span id="exportCsvLabel"><i class="bi bi-file-earmark-spreadsheet-fill text-success me-2"></i> CSV Regional Ledger</span>
+              id="btnExportCsv" type="button">
+              <span id="exportCsvLabel"><i class="bi bi-file-earmark-spreadsheet-fill text-success me-2"></i> CSV
+                Regional Ledger</span>
               <span id="exportCsvStatus"><i class="bi bi-chevron-right text-secondary"></i></span>
             </button>
           </div>
-          <div class="mt-3 pt-2.5 border-top border-slate-200 d-flex justify-content-between align-items-center text-slate-500 fs-9">
-            <span id="exportActiveJurisdictionBadge"><i class="bi bi-shield-check text-primary me-1"></i> Active: Policymaker (National)</span>
+          <div
+            class="mt-3 pt-2.5 border-top border-slate-200 d-flex justify-content-between align-items-center text-slate-500 fs-9">
+            <span id="exportActiveJurisdictionBadge"><i class="bi bi-shield-check text-primary me-1"></i> Active:
+              Policymaker (National)</span>
             <span class="badge bg-light text-secondary border">Audited MCA v1.0.0</span>
           </div>
         </div>
@@ -3519,7 +3509,7 @@
         if (role === "District Collector") {
           districtName = (currentOfficerSession && currentOfficerSession.district) || (activeDashboardData && activeDashboardData.district) || "Haveri";
           stateName = (currentOfficerSession && currentOfficerSession.state) || (activeDashboardData && activeDashboardData.state) || "Karnataka";
-          
+
           if (exportModalTitle) {
             exportModalTitle.innerHTML = `<i class="bi bi-geo-alt-fill text-success me-1.5"></i> Export District Priority Brief (${districtName})`;
           }
@@ -3537,7 +3527,7 @@
           }
         } else if (role === "State Planner") {
           stateName = (statePlannerDropdown && statePlannerDropdown.value) || (currentOfficerSession && currentOfficerSession.state) || (activeDashboardData && activeDashboardData.state) || "Jharkhand";
-          
+
           if (exportModalTitle) {
             exportModalTitle.innerHTML = `<i class="bi bi-diagram-3-fill text-warning me-1.5"></i> Export State Priority Brief (${stateName})`;
           }
@@ -3679,15 +3669,37 @@
 
         container.innerHTML = breakdown.factors.map((f, idx) => {
           const color = FACTOR_COLORS[idx % FACTOR_COLORS.length];
+          const isPending = f.status === "PENDING_DATASET" || f.raw_score == null;
           const weightPct = Math.round((f.weight || 0) * 100);
+          const source = f.source_dataset ?? f.sourceDataset ?? "";
+
+          if (isPending) {
+            // Honest empty state: no fabricated raw/weighted numbers for a
+            // factor with no real dataset behind it yet.
+            return `
+              <div class="factor-item${idx > 0 ? " mt-2.5" : ""}" style="opacity: 0.55;">
+                <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
+                  <span class="text-slate-800">
+                    ${f.name} <span class="badge bg-light text-secondary border fs-8">Weight: ${weightPct}% (reallocated)</span>
+                  </span>
+                  <span class="badge bg-secondary-subtle text-secondary border fs-8">Pending Dataset</span>
+                </div>
+                <div class="progress" style="height: 7px;">
+                  <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%; opacity: 0.25;"></div>
+                </div>
+                <div class="text-slate-500 fs-9 mt-0.5">Source: ${source}</div>
+              </div>
+            `;
+          }
+
           const raw = f.raw_score ?? f.rawScore ?? 0;
           const weighted = f.weighted_score ?? f.weightedScore ?? 0;
-          const source = f.source_dataset ?? f.sourceDataset ?? "";
+          const effWeightPct = f.effective_weight != null ? Math.round(f.effective_weight * 100) : weightPct;
           return `
             <div class="factor-item${idx > 0 ? " mt-2.5" : ""}">
               <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
                 <span class="text-slate-800">
-                  ${f.name} <span class="badge bg-light text-secondary border fs-8">Weight: ${weightPct}%</span>
+                  ${f.name} <span class="badge bg-light text-secondary border fs-8">Weight: ${weightPct}%${effWeightPct !== weightPct ? ` (applied: ${effWeightPct}%)` : ""}</span>
                 </span>
                 <span class="text-slate-900">${raw} raw &bull; <strong class="text-${color}">+${weighted} pts</strong></span>
               </div>
@@ -3701,7 +3713,9 @@
 
         const scoreBadge = document.querySelector("#spotlight-section .badge.bg-emerald-subtle");
         if (scoreBadge && breakdown.score != null) {
-          scoreBadge.textContent = `Score: ${breakdown.score} / 100`;
+          const coverageNote = breakdown.data_coverage != null && breakdown.data_coverage < 100
+            ? ` (${breakdown.data_coverage}% data coverage)` : "";
+          scoreBadge.textContent = `Score: ${breakdown.score} / 100${coverageNote}`;
         }
       }
       window.renderFactorBars = renderFactorBars;
@@ -3851,7 +3865,12 @@
             // Reset button) and its visible sliders in sync with whichever
             // jurisdiction is now loaded, instead of a fixed national baseline.
             if (spot.priority_breakdown && Array.isArray(spot.priority_breakdown.factors) && spot.priority_breakdown.factors.length >= 6) {
-              const raws = spot.priority_breakdown.factors.map((f) => f.raw_score ?? f.rawScore ?? 0);
+              // Pending (not-yet-datasetted) factors have raw_score === null;
+              // the simulator still needs *some* starting position for its
+              // slider, so those default to a neutral 50 — this is purely a
+              // "what if" starting point for the interactive tool, not a
+              // claim about real data.
+              const raws = spot.priority_breakdown.factors.map((f) => (f.raw_score ?? f.rawScore ?? 50));
               currentSimDefaults = {
                 demand: raws[0], gap: raws[1], vulnerability: raws[2],
                 accessibility_deficit: raws[3], urgency: raws[4], investment_mismatch: raws[5],
@@ -5225,7 +5244,13 @@
 
       // --- 2. Sync Priority Simulator sliders (use getElementById to avoid scope issues) ---
       if (h.priority_breakdown && Array.isArray(h.priority_breakdown.factors) && h.priority_breakdown.factors.length >= 6) {
-        var raws = h.priority_breakdown.factors.map(function (f) { return f.raw_score != null ? f.raw_score : (f.rawScore != null ? f.rawScore : 0); });
+        // Pending (not-yet-datasetted) factors have raw_score === null; default
+        // those to a neutral 50 as just a "what if" starting point for the
+        // interactive simulator, not a claim about real data.
+        var raws = h.priority_breakdown.factors.map(function (f) {
+          var v = (f.raw_score != null) ? f.raw_score : f.rawScore;
+          return (v != null) ? v : 50;
+        });
         var sliderIds = ["simDemand", "simGap", "simVuln", "simAcc", "simUrg", "simInv"];
         var labelIds = ["valDemand", "valGap", "valVuln", "valAcc", "valUrg", "valInv"];
         sliderIds.forEach(function (id, idx) {
