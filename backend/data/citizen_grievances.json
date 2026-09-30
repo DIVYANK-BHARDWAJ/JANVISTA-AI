@@ -1,115 +1,144 @@
 [
   {
-    "tracking_id": "JAN-2026-BR-54569",
-    "name": "Anita Devi",
-    "phone": "9876543210",
-    "email": "anita@gmail.com",
-    "state": "Bihar",
-    "district": "Patna",
-    "village_or_ward": "Danapur Cantonment",
-    "category": "Drinking Water",
-    "urgency": "CRITICAL",
-    "description": "Severe water contamination and fluoride issue in drinking water. Immediate filtration grid required.",
-    "status": "UNDER_REVIEW",
-    "department": "District Drinking Water Administration",
-    "timestamp": "2026-09-29 01:48",
-    "user_submitted": true,
-    "official_remarks": [
-      {
-        "officer": "System Dispatcher",
-        "date": "2026-09-29 01:48",
-        "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
-      }
-    ]
-  },
-  {
-    "tracking_id": "JAN-2026-HP-73335",
-    "name": "Kailash chopada",
-    "phone": "9112030451",
-    "email": "kailash123@gmail.com",
-    "state": "Himachal Pradesh",
-    "district": "Mandi",
-    "village_or_ward": "Ram nagar",
-    "category": "Others",
-    "urgency": "CRITICAL",
-    "description": "Here landslides occuring and creates accidents , Please take a serious action",
-    "status": "UNDER_REVIEW",
-    "department": "District Others Administration",
-    "timestamp": "2026-09-28 18:10",
-    "user_submitted": true,
-    "official_remarks": [
-      {
-        "officer": "System Dispatcher",
-        "date": "2026-09-28 18:10",
-        "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
-      }
-    ]
-  },
-  {
-    "tracking_id": "JAN-2026-HP-86135",
-    "name": "Sita",
-    "phone": "9112030451",
-    "email": "sita123@gmail.com",
-    "state": "Himachal Pradesh",
-    "district": "Shimla",
-    "village_or_ward": "dalhousie nagar",
+    "tracking_id": "JAN-2026-KA-73475",
+    "name": "Ramesh Chouhan",
+    "phone": "9449069228",
+    "email": "ramesh123@gmail.com",
+    "state": "Karnataka",
+    "district": "Haveri",
+    "village_or_ward": "Manjunatha layout",
     "category": "Healthcare",
     "urgency": "CRITICAL",
-    "description": "No hospitals in these hilly areas , please take a serious action.",
-    "status": "FIELD_AUDIT_SCHEDULED",
+    "ai_analysis": {
+      "provider": "deterministic_fallback",
+      "category": "Other",
+      "severity": 95,
+      "immediacy": 95,
+      "language_detected": "und",
+      "english_summary": "No hospital nearby , need to travel for loner distance. Please look over this.",
+      "used_for_priority": false
+    },
+    "map_accessibility": {
+      "status": "LOCATION_NOT_FOUND",
+      "message": "Google could not geocode the submitted locality."
+    },
+    "description": "No hospital nearby , need to travel for loner distance. Please look over this.",
+    "status": "UNDER_REVIEW",
     "department": "District Healthcare Administration",
-    "timestamp": "2026-09-27 07:39",
+    "timestamp": "2026-09-30 15:46",
     "user_submitted": true,
     "official_remarks": [
       {
         "officer": "System Dispatcher",
-        "date": "2026-09-27 07:39",
+        "date": "2026-09-30 15:46",
         "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
       }
     ]
   },
   {
-    "tracking_id": "JAN-2026-KA-43440",
-    "name": "Ravi Kumar",
+    "tracking_id": "JAN-2026-KA-64246",
+    "name": "Ishaan",
     "phone": "98176 32418",
-    "email": "ravi123@gmail.com",
+    "email": "ishaan123@gmail.com",
+    "state": "Karnataka",
+    "district": "Dharwad",
+    "village_or_ward": "Plot no 19 Hastinapur layout Keshwapur",
+    "category": "Drinking Water",
+    "urgency": "CRITICAL",
+    "ai_analysis": {
+      "provider": "deterministic_fallback",
+      "category": "Other",
+      "severity": 95,
+      "immediacy": 95,
+      "language_detected": "und",
+      "english_summary": "In our locality tanks are not coming regularly for supplying water. Please take a serious action.",
+      "used_for_priority": false
+    },
+    "map_accessibility": {
+      "status": "NOT_APPLICABLE",
+      "message": "Routes are calculated only for healthcare requests."
+    },
+    "description": "In our locality tanks are not coming regularly for supplying water. Please take a serious action.",
+    "status": "UNDER_REVIEW",
+    "department": "District Drinking Water Administration",
+    "timestamp": "2026-09-30 05:58",
+    "user_submitted": true,
+    "official_remarks": [
+      {
+        "officer": "System Dispatcher",
+        "date": "2026-09-30 05:58",
+        "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
+      }
+    ]
+  },
+  {
+    "tracking_id": "JAN-2026-KA-46136",
+    "name": "Ram Tejas",
+    "phone": "7945632109",
+    "email": "ramtj123@gmail.com",
+    "state": "Karnataka",
+    "district": "Dharwad",
+    "village_or_ward": "Vidya nagar",
+    "category": "Education & Schools",
+    "urgency": "HIGH",
+    "ai_analysis": {
+      "provider": "deterministic_fallback",
+      "category": "Other",
+      "severity": 75,
+      "immediacy": 75,
+      "language_detected": "und",
+      "english_summary": "There are very less schools in our area , and please look over this issue. We want our children get education.",
+      "used_for_priority": false
+    },
+    "map_accessibility": {
+      "status": "NOT_APPLICABLE",
+      "message": "Routes are calculated only for healthcare requests."
+    },
+    "description": "There are very less schools in our area , and please look over this issue. We want our children get education.",
+    "status": "UNDER_REVIEW",
+    "department": "District Education & Schools Administration",
+    "timestamp": "2026-09-30 05:56",
+    "user_submitted": true,
+    "official_remarks": [
+      {
+        "officer": "System Dispatcher",
+        "date": "2026-09-30 05:56",
+        "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
+      }
+    ]
+  },
+  {
+    "tracking_id": "JAN-2026-KA-61979",
+    "name": "Vikas Eli",
+    "phone": "9036069228",
+    "email": "vikaseli20@gmail.com",
     "state": "Karnataka",
     "district": "Haveri",
     "village_or_ward": "Manjunatha layout",
     "category": "Roads & Bridges",
     "urgency": "CRITICAL",
-    "description": "Roads are Kaccha and cannot drive cars , etc on these roads.\nPlease take a serious action.",
-    "status": "FIELD_AUDIT_SCHEDULED",
+    "ai_analysis": {
+      "provider": "deterministic_fallback",
+      "category": "Other",
+      "severity": 95,
+      "immediacy": 95,
+      "language_detected": "und",
+      "english_summary": "Roads are a bit broken , very difficult to drive the vehicles.",
+      "used_for_priority": false
+    },
+    "map_accessibility": {
+      "status": "NOT_APPLICABLE",
+      "message": "Routes are calculated only for healthcare requests."
+    },
+    "description": "Roads are a bit broken , very difficult to drive the vehicles.",
+    "status": "UNDER_REVIEW",
     "department": "District Roads & Bridges Administration",
-    "timestamp": "2026-09-25 18:15",
+    "timestamp": "2026-09-29 21:27",
     "user_submitted": true,
     "official_remarks": [
       {
         "officer": "System Dispatcher",
-        "date": "2026-09-25 18:15",
-        "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
-      }
-    ]
-  },
-  {
-    "tracking_id": "JAN-2026-KA-72878",
-    "name": "Vikas",
-    "phone": "9036069228",
-    "email": "vikaseli20@gmail.com",
-    "state": "Karnataka",
-    "district": "Dharwad",
-    "village_or_ward": "Plot no 19 Hastinapur layout Keshwapur",
-    "category": "Healthcare",
-    "urgency": "CRITICAL",
-    "description": "No hospitals nearby , Old people need to walk for a long distance. Please take a serious action.",
-    "status": "IN_PROGRESS",
-    "department": "District Healthcare Administration",
-    "timestamp": "2026-09-25 15:25",
-    "user_submitted": true,
-    "official_remarks": [
-      {
-        "officer": "System Dispatcher",
-        "date": "2026-09-25 15:25",
+        "date": "2026-09-29 21:27",
         "remark": "Grievance registered in National Decision Intelligence Ledger. Forwarded to District Collectorate."
       }
     ]

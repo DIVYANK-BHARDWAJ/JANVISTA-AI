@@ -14,7 +14,7 @@ describe("Infrastructure Gap Engine", () => {
     const gap = calculateInfrastructureGap(input);
     expect(gap.gapIndex).toBe(83.6);
     expect(gap.methodologyVersion).toBe("v1.0.0");
-    expect(gap.dataClassification).toBe("SYNTHETIC_DATA");
+    expect(gap.dataClassification).toBe("PUBLIC_REAL_DATA");
   });
 
   it("should clamp gap index within [0, 100]", () => {

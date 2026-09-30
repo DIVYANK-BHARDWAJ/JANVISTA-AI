@@ -154,10 +154,9 @@
             </ul>
           </div>
 
-          <!-- Zero-Key Offline Badge -->
-          <span
+          <span id="integrationModeBadge"
             class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle px-3 py-2 fs-7 fw-medium d-none d-xl-inline-block">
-            <i class="bi bi-shield-lock-fill me-1"></i> Offline / Zero-Key Mode
+            <i class="bi bi-arrow-repeat me-1"></i> Checking integrations…
           </span>
         </div>
       </div>
@@ -626,8 +625,8 @@
                 <span class="text-secondary fs-7 fw-semibold text-uppercase tracking-wider">Hotspots Detected</span>
                 <span class="kpi-icon-pill bg-rose-subtle text-rose"><i class="bi bi-fire"></i></span>
               </div>
-              <div class="kpi-value text-slate-900" id="kpi-hotspots-value">5 Regions</div>
-              <div class="text-secondary fs-8 mt-1" id="kpi-hotspots-sub">Sitapur UP ranked #1</div>
+              <div class="kpi-value text-slate-900" id="kpi-hotspots-value">0 Regions</div>
+              <div class="text-secondary fs-8 mt-1" id="kpi-hotspots-sub">No active hotspots</div>
             </div>
           </div>
         </div>
@@ -639,8 +638,8 @@
                 <span class="text-secondary fs-7 fw-semibold text-uppercase tracking-wider">Max Gap Index</span>
                 <span class="kpi-icon-pill bg-amber-subtle text-amber"><i class="bi bi-hospital-fill"></i></span>
               </div>
-              <div class="kpi-value text-slate-900" id="kpi-gap-value">91.2 %</div>
-              <div class="text-secondary fs-8 mt-1" id="kpi-gap-sub">Sitapur Healthcare Deficit</div>
+              <div class="kpi-value text-slate-900" id="kpi-gap-value">0 %</div>
+              <div class="text-secondary fs-8 mt-1" id="kpi-gap-sub">No grievance data</div>
             </div>
           </div>
         </div>
@@ -652,8 +651,8 @@
                 <span class="text-secondary fs-7 fw-semibold text-uppercase tracking-wider">Top Priority Score</span>
                 <span class="kpi-icon-pill bg-emerald-subtle text-emerald"><i class="bi bi-award-fill"></i></span>
               </div>
-              <div class="kpi-value text-emerald-emphasis" id="kpi-priority-value">89.4 / 100</div>
-              <div class="text-secondary fs-8 mt-1" id="kpi-priority-sub">Model v1.0.0 (Audited)</div>
+              <div class="kpi-value text-emerald-emphasis" id="kpi-priority-value">0 / 100</div>
+              <div class="text-secondary fs-8 mt-1" id="kpi-priority-sub">No data yet</div>
             </div>
           </div>
         </div>
@@ -661,7 +660,7 @@
     </section>
 
     <!-- Priority Opportunity Spotlight & Explainability Row -->
-    <section class="mb-4" id="spotlight-section">
+    <section class="mb-4" id="spotlight-section" style="display:none;">
       <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
         <div
           class="card-header bg-white border-bottom border-slate-200 py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
@@ -866,8 +865,8 @@
                 <thead class="table-light fs-8 text-uppercase tracking-wider text-secondary">
                   <tr>
                     <th class="ps-4" id="hotspotsTableColRegion">Rank & Region</th>
-                    <th>Sector Gap</th>
-                    <th>Gap Index</th>
+                    <th>Sector</th>
+                    <th>Infrastructure Gap</th>
                     <th>Priority</th>
                     <th>Citizen Demand</th>
                     <th class="text-end pe-4">Action</th>
@@ -904,8 +903,11 @@
 
           <div class="card-body p-4">
             <p class="text-secondary fs-8 mb-3">
-              Adjust input parameters below. The Flask backend calculates the audited priority score in real-time.
+              Starts from the current #1 hotspot. Slider changes are a what-if simulation and never alter source data.
             </p>
+            <div class="alert alert-warning fs-8 py-2 d-none" id="simulatorEvidenceNotice">
+              <i class="bi bi-database-exclamation me-1"></i> Simulator awaits complete source data for all baseline factors.
+            </div>
 
             <!-- Sliders Form -->
             <form id="simulatorForm" class="space-y-3">
@@ -913,63 +915,63 @@
               <div>
                 <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
                   <label for="simDemand" class="form-label mb-0 text-slate-800">Citizen Demand Signal (30%)</label>
-                  <span class="text-primary fw-bold" id="valDemand">94</span>
+                  <span class="text-primary fw-bold" id="valDemand">0</span>
                 </div>
-                <input type="range" class="form-range" min="0" max="100" value="94" id="simDemand">
+                <input type="range" class="form-range" min="0" max="100" value="0" id="simDemand">
               </div>
 
               <!-- Slider 2: Gap -->
               <div class="mt-2">
                 <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
                   <label for="simGap" class="form-label mb-0 text-slate-800">Infrastructure Gap (25%)</label>
-                  <span class="text-danger fw-bold" id="valGap">91</span>
+                  <span class="text-danger fw-bold" id="valGap">0</span>
                 </div>
-                <input type="range" class="form-range" min="0" max="100" value="91" id="simGap">
+                <input type="range" class="form-range" min="0" max="100" value="0" id="simGap">
               </div>
 
               <!-- Slider 3: Vulnerability -->
               <div class="mt-2">
                 <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
                   <label for="simVuln" class="form-label mb-0 text-slate-800">Population Vulnerability (15%)</label>
-                  <span class="text-warning-emphasis fw-bold" id="valVuln">86</span>
+                  <span class="text-warning-emphasis fw-bold" id="valVuln">0</span>
                 </div>
-                <input type="range" class="form-range" min="0" max="100" value="86" id="simVuln">
+                <input type="range" class="form-range" min="0" max="100" value="0" id="simVuln">
               </div>
 
               <!-- Slider 4: Accessibility -->
               <div class="mt-2">
                 <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
                   <label for="simAcc" class="form-label mb-0 text-slate-800">Accessibility Deficit (15%)</label>
-                  <span class="text-info fw-bold" id="valAcc">88</span>
+                  <span class="text-info fw-bold" id="valAcc">0</span>
                 </div>
-                <input type="range" class="form-range" min="0" max="100" value="88" id="simAcc">
+                <input type="range" class="form-range" min="0" max="100" value="0" id="simAcc">
               </div>
 
               <!-- Slider 5: Urgency -->
               <div class="mt-2">
                 <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
                   <label for="simUrg" class="form-label mb-0 text-slate-800">Urgency Signal (10%)</label>
-                  <span class="text-purple fw-bold" id="valUrg">82</span>
+                  <span class="text-purple fw-bold" id="valUrg">0</span>
                 </div>
-                <input type="range" class="form-range" min="0" max="100" value="82" id="simUrg">
+                <input type="range" class="form-range" min="0" max="100" value="0" id="simUrg">
               </div>
 
               <!-- Slider 6: Investment Mismatch -->
               <div class="mt-2">
                 <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
                   <label for="simInv" class="form-label mb-0 text-slate-800">Investment Mismatch (5%)</label>
-                  <span class="text-dark fw-bold" id="valInv">74</span>
+                  <span class="text-dark fw-bold" id="valInv">0</span>
                 </div>
-                <input type="range" class="form-range" min="0" max="100" value="74" id="simInv">
+                <input type="range" class="form-range" min="0" max="100" value="0" id="simInv">
               </div>
 
               <!-- Simulator Result Box -->
               <div class="bg-slate-100 rounded-3 p-3 mt-3 border border-slate-200 text-center">
                 <div class="text-secondary fs-8 fw-semibold text-uppercase tracking-wider">Simulated Priority Score
                 </div>
-                <div class="display-6 fw-black text-slate-900 mt-1" id="simResultScore">89.4</div>
+                <div class="display-6 fw-black text-slate-900 mt-1" id="simResultScore">—</div>
                 <div class="text-slate-500 fs-8 mt-1" id="simResultTier">
-                  <span class="badge bg-danger rounded-pill px-2.5 py-1">Critical Priority Tier</span>
+                  <span class="badge bg-secondary rounded-pill px-2.5 py-1">Adjust sliders &amp; Compute Score</span>
                 </div>
               </div>
 
@@ -2822,6 +2824,19 @@
 
 
     document.addEventListener("DOMContentLoaded", () => {
+      fetch("/api/integrations/status")
+        .then((response) => response.json())
+        .then((status) => {
+          const badge = document.getElementById("integrationModeBadge");
+          if (!badge) return;
+          const ndapReady = Object.values(status.ndap || {}).some((value) => value === "AVAILABLE" || value === "PARTIAL_COVERAGE");
+          const live = Boolean(status.gemini_configured || status.google_maps_configured || ndapReady);
+          badge.className = `badge rounded-pill ${live ? "bg-info-subtle text-info-emphasis border border-info-subtle" : "bg-success-subtle text-success-emphasis border border-success-subtle"} px-3 py-2 fs-7 fw-medium d-none d-xl-inline-block`;
+          badge.innerHTML = live
+            ? '<i class="bi bi-cloud-check-fill me-1"></i> API Integrations Configured'
+            : '<i class="bi bi-shield-lock-fill me-1"></i> Offline / Zero-Key Mode';
+        })
+        .catch(() => {});
       // Wire State -> District dependent dropdowns for citizen grievance forms
       wireStateDistrictDropdown("citizenInputState", "citizenInputDistrict", "", "");
       wireStateDistrictDropdown("citizenState", "citizenDistrict", "", "");
@@ -2878,6 +2893,7 @@
       });
 
       async function calculateLivePriority() {
+        if (window._simulatorEvidenceComplete === false) return;
         const payload = {
           demand: parseFloat(simDemand.value),
           gap: parseFloat(simGap.value),
@@ -2927,18 +2943,18 @@
       let activeHotspots = [];
       let activeSpotlight = null;
       let currentSimDefaults = {
-        demand: 94,
-        gap: 91,
-        vulnerability: 86,
-        accessibility_deficit: 88,
-        urgency: 82,
-        investment_mismatch: 74
+        demand: 0,
+        gap: 0,
+        vulnerability: 0,
+        accessibility_deficit: 0,
+        urgency: 0,
+        investment_mismatch: 0
       };
 
       // Reset simulator
       if (btnResetSim) {
         btnResetSim.addEventListener("click", () => {
-          const d = window._currentSimDefaults || currentSimDefaults || { demand: 94, gap: 91, vulnerability: 86, accessibility_deficit: 88, urgency: 82, investment_mismatch: 74 };
+          const d = window._currentSimDefaults || currentSimDefaults || { demand: 0, gap: 0, vulnerability: 0, accessibility_deficit: 0, urgency: 0, investment_mismatch: 0 };
           if (simDemand && valDemand) { simDemand.value = d.demand; valDemand.textContent = d.demand; }
           if (simGap && valGap) { simGap.value = d.gap; valGap.textContent = d.gap; }
           if (simVuln && valVuln) { simVuln.value = d.vulnerability; valVuln.textContent = d.vulnerability; }
@@ -2965,6 +2981,9 @@
           btnRefreshData.disabled = true;
 
           try {
+            // Old submissions may have been saved while Gemini was unavailable.
+            // Refresh explicitly retries those records before recalculating.
+            await fetch("/api/citizen/grievances/reprocess-ai", { method: "POST" });
             if (currentActiveRole === "District Collector" && currentOfficerSession?.district) {
               await loadDashboardForDistrict(currentOfficerSession.district, currentOfficerSession.state);
             } else if (currentActiveRole === "State Planner" && statePlannerDropdown?.value) {
@@ -3667,39 +3686,19 @@
         const container = document.getElementById("factorBarsContainer");
         if (!container || !breakdown || !Array.isArray(breakdown.factors)) return;
 
-        container.innerHTML = breakdown.factors.map((f, idx) => {
+        const scoredFactors = breakdown.factors.filter((f) => f.status !== "ZERO_VALUE");
+        container.innerHTML = scoredFactors.map((f, idx) => {
           const color = FACTOR_COLORS[idx % FACTOR_COLORS.length];
-          const isPending = f.status === "PENDING_DATASET" || f.raw_score == null;
           const weightPct = Math.round((f.weight || 0) * 100);
           const source = f.source_dataset ?? f.sourceDataset ?? "";
 
-          if (isPending) {
-            // Honest empty state: no fabricated raw/weighted numbers for a
-            // factor with no real dataset behind it yet.
-            return `
-              <div class="factor-item${idx > 0 ? " mt-2.5" : ""}" style="opacity: 0.55;">
-                <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
-                  <span class="text-slate-800">
-                    ${f.name} <span class="badge bg-light text-secondary border fs-8">Weight: ${weightPct}% (reallocated)</span>
-                  </span>
-                  <span class="badge bg-secondary-subtle text-secondary border fs-8">Pending Dataset</span>
-                </div>
-                <div class="progress" style="height: 7px;">
-                  <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%; opacity: 0.25;"></div>
-                </div>
-                <div class="text-slate-500 fs-9 mt-0.5">Source: ${source}</div>
-              </div>
-            `;
-          }
-
           const raw = f.raw_score ?? f.rawScore ?? 0;
           const weighted = f.weighted_score ?? f.weightedScore ?? 0;
-          const effWeightPct = f.effective_weight != null ? Math.round(f.effective_weight * 100) : weightPct;
           return `
             <div class="factor-item${idx > 0 ? " mt-2.5" : ""}">
               <div class="d-flex justify-content-between fs-8 fw-semibold mb-1">
                 <span class="text-slate-800">
-                  ${f.name} <span class="badge bg-light text-secondary border fs-8">Weight: ${weightPct}%${effWeightPct !== weightPct ? ` (applied: ${effWeightPct}%)` : ""}</span>
+                  ${f.name} <span class="badge bg-light text-secondary border fs-8">Weight: ${weightPct}%</span>
                 </span>
                 <span class="text-slate-900">${raw} raw &bull; <strong class="text-${color}">+${weighted} pts</strong></span>
               </div>
@@ -3713,13 +3712,45 @@
 
         const scoreBadge = document.querySelector("#spotlight-section .badge.bg-emerald-subtle");
         if (scoreBadge && breakdown.score != null) {
-          const coverageNote = breakdown.data_coverage != null && breakdown.data_coverage < 100
-            ? ` (${breakdown.data_coverage}% data coverage)` : "";
-          scoreBadge.textContent = `Score: ${breakdown.score} / 100${coverageNote}`;
+          scoreBadge.textContent = `Score: ${breakdown.score} / 100`;
         }
       }
       window.renderFactorBars = renderFactorBars;
       window.calculateLivePriority = calculateLivePriority;
+
+      function setSimulatorEvidenceAvailability(factors) {
+        const complete = Array.isArray(factors) && factors.length === 6 && factors.every((f) => (f.raw_score ?? f.rawScore) != null);
+        window._simulatorEvidenceComplete = complete;
+        const notice = document.getElementById("simulatorEvidenceNotice");
+        if (notice) notice.classList.toggle("d-none", complete);
+        [simDemand, simGap, simVuln, simAcc, simUrg, simInv, btnApplySim, btnResetSim].forEach((el) => { if (el) el.disabled = !complete; });
+        if (!complete && simResultScore) {
+          simResultScore.textContent = "—";
+          if (simResultTier) simResultTier.innerHTML = '<span class="badge bg-secondary rounded-pill px-2.5 py-1">Awaiting source data</span>';
+        }
+      }
+
+      function applyEvidenceMetricState(category, capex, population, currentTransit, targetTransit) {
+        const capexEl = document.getElementById("spotlightCapex");
+        const populationEl = document.getElementById("spotlightPopulation");
+        const capexCard = capexEl && capexEl.closest(".col-6");
+        const populationCard = populationEl && populationEl.closest(".col-6");
+        if (capexCard) capexCard.style.display = capex == null ? "none" : "";
+        if (populationCard) populationCard.style.display = population == null ? "none" : "";
+        const showTransit = category === "Healthcare" && currentTransit != null && targetTransit != null;
+        ["spotlightCurrentTransit", "spotlightTargetTransit"].forEach((id) => {
+          const valueEl = document.getElementById(id);
+          const card = valueEl && valueEl.closest(".col-6");
+          if (card) card.style.display = showTransit ? "" : "none";
+        });
+        const metricsBox = capexEl && capexEl.closest(".bg-slate-100");
+        if (metricsBox) {
+          const visibleMetrics = Array.from(metricsBox.querySelectorAll(".col-6"))
+            .some((card) => card.style.display !== "none");
+          metricsBox.style.display = visibleMetrics ? "" : "none";
+        }
+      }
+      window.applyEvidenceMetricState = applyEvidenceMetricState;
 
       // Convenience wrapper so callers can pass (district, state) in that
       // order — matches how the Refresh button and role controller already
@@ -3817,7 +3848,11 @@
           }
 
           // 4. Update Spotlight Recommendation
+          const spotlightSection = document.getElementById("spotlight-section");
           if (data.spotlight) {
+            // Show the section only when there is real data
+            if (spotlightSection) spotlightSection.style.display = "";
+
             const spot = data.spotlight;
             const spotlightUrgency = document.getElementById("spotlightUrgency");
             const spotlightCategory = document.getElementById("spotlightCategory");
@@ -3856,6 +3891,7 @@
             if (curTransitEl && curTransit != null) curTransitEl.textContent = `${curTransit} Mins`;
             const tarTransitEl = document.getElementById("spotlightTargetTransit");
             if (tarTransitEl && tarTransit != null) tarTransitEl.textContent = `${tarTransit} Mins`;
+            applyEvidenceMetricState(spot.category, capexVal, popVal, curTransit, tarTransit);
 
             // Rebuild the 6-factor "Why This?" bars and score badge from
             // this jurisdiction's own breakdown (previously static HTML).
@@ -3865,12 +3901,7 @@
             // Reset button) and its visible sliders in sync with whichever
             // jurisdiction is now loaded, instead of a fixed national baseline.
             if (spot.priority_breakdown && Array.isArray(spot.priority_breakdown.factors) && spot.priority_breakdown.factors.length >= 6) {
-              // Pending (not-yet-datasetted) factors have raw_score === null;
-              // the simulator still needs *some* starting position for its
-              // slider, so those default to a neutral 50 — this is purely a
-              // "what if" starting point for the interactive tool, not a
-              // claim about real data.
-              const raws = spot.priority_breakdown.factors.map((f) => (f.raw_score ?? f.rawScore ?? 50));
+              const raws = spot.priority_breakdown.factors.map((f) => (f.raw_score ?? f.rawScore ?? 0));
               currentSimDefaults = {
                 demand: raws[0], gap: raws[1], vulnerability: raws[2],
                 accessibility_deficit: raws[3], urgency: raws[4], investment_mismatch: raws[5],
@@ -3883,8 +3914,23 @@
                 input.value = raws[idx];
                 if (sliderLabels[idx]) sliderLabels[idx].textContent = raws[idx];
               });
-              calculateLivePriority();
+              setSimulatorEvidenceAvailability(spot.priority_breakdown.factors);
+              if (window._simulatorEvidenceComplete) calculateLivePriority();
             }
+          } else {
+            // No grievances / no spotlight — hide the entire section so no
+            // hardcoded placeholder data is ever shown to the user.
+            if (spotlightSection) spotlightSection.style.display = "none";
+
+            // Also reset the Top Priority Score KPI card to reflect empty state
+            const kpiPriorityVal = document.getElementById("kpi-priority-value");
+            const kpiPrioritySub = document.getElementById("kpi-priority-sub");
+            if (kpiPriorityVal) kpiPriorityVal.textContent = "0 / 100";
+            if (kpiPrioritySub) kpiPrioritySub.textContent = "No data yet";
+
+            // Clear the factor bars container so stale bars don't persist
+            const factorContainer = document.getElementById("factorBarsContainer");
+            if (factorContainer) factorContainer.innerHTML = "";
           }
 
           // 5. Update Ranked Hotspots Table
@@ -3942,11 +3988,11 @@
                   </div>
                 </td>
                 <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">${h.category}</span></td>
-                <td><strong class="${h.gap_index >= 85 ? 'text-danger' : 'text-warning-emphasis'}">${h.gap_index} %</strong></td>
+                <td><strong class="${h.gap_index == null ? 'text-secondary' : (h.gap_index >= 85 ? 'text-danger' : 'text-warning-emphasis')}">${h.gap_index == null ? 'N/A' : h.gap_index + ' %'}</strong></td>
                 <td><span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle fw-bold">${h.priority_score} / 100</span></td>
                 <td>${(h.citizen_requests || 0).toLocaleString()} requests</td>
                 <td class="text-end pe-4">
-                  <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fs-8 fw-semibold" onclick="selectHotspot(${idx})">
+                  <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fs-8 fw-semibold" onclick="window.selectHotspot(${idx})">
                     Details
                   </button>
                 </td>
@@ -4391,6 +4437,10 @@
               await loadGrievances();
 
               showToast(`<i class="bi bi-check-circle-fill me-1 text-success"></i> Grievance registered! Tracking ID: <strong>${json.tracking_id}</strong>`);
+              const route = json.map_accessibility;
+              if (route?.status === "AVAILABLE") {
+                showToast(`<i class="bi bi-geo-alt-fill me-1 text-primary"></i> Google Maps: nearest hospital is <strong>${route.nearest_hospital.name}</strong>, ${route.nearest_hospital.minutes} min by road.`);
+              }
 
               onPageGrievanceForm.reset();
             } else {
@@ -4608,6 +4658,10 @@
               await loadGrievances();
 
               showToast(`<i class="bi bi-check-circle-fill me-1 text-success"></i> Grievance filed! Tracking ID: <strong>${json.tracking_id}</strong>`);
+              const route = json.map_accessibility;
+              if (route?.status === "AVAILABLE") {
+                showToast(`<i class="bi bi-geo-alt-fill me-1 text-primary"></i> Google Maps: nearest hospital is <strong>${route.nearest_hospital.name}</strong>, ${route.nearest_hospital.minutes} min by road.`);
+              }
 
               const modalEl = document.getElementById("citizenGrievanceModal");
               modalEl.addEventListener("hidden.bs.modal", () => {
@@ -5231,6 +5285,11 @@
       if (curTransitEl && h.current_transit_mins != null) curTransitEl.textContent = h.current_transit_mins + " Mins";
       const tarTransitEl = document.getElementById("spotlightTargetTransit");
       if (tarTransitEl && h.target_transit_mins != null) tarTransitEl.textContent = h.target_transit_mins + " Mins";
+      // This selector lives outside the dashboard's initialisation scope.
+      // Keep Details functional even when optional evidence cards are absent.
+      if (typeof window.applyEvidenceMetricState === "function") {
+        window.applyEvidenceMetricState(h.category, h.estimated_cost_cr, h.impacted_population, h.current_transit_mins, h.target_transit_mins);
+      }
 
       const scoreBadge = document.querySelector("#spotlight-section .badge.bg-emerald-subtle");
       if (scoreBadge && h.priority_score != null) {
@@ -5244,12 +5303,9 @@
 
       // --- 2. Sync Priority Simulator sliders (use getElementById to avoid scope issues) ---
       if (h.priority_breakdown && Array.isArray(h.priority_breakdown.factors) && h.priority_breakdown.factors.length >= 6) {
-        // Pending (not-yet-datasetted) factors have raw_score === null; default
-        // those to a neutral 50 as just a "what if" starting point for the
-        // interactive simulator, not a claim about real data.
         var raws = h.priority_breakdown.factors.map(function (f) {
           var v = (f.raw_score != null) ? f.raw_score : f.rawScore;
-          return (v != null) ? v : 50;
+          return (v != null) ? v : 0;
         });
         var sliderIds = ["simDemand", "simGap", "simVuln", "simAcc", "simUrg", "simInv"];
         var labelIds = ["valDemand", "valGap", "valVuln", "valAcc", "valUrg", "valInv"];
@@ -5263,6 +5319,7 @@
           demand: raws[0], gap: raws[1], vulnerability: raws[2],
           accessibility_deficit: raws[3], urgency: raws[4], investment_mismatch: raws[5]
         };
+        if (typeof setSimulatorEvidenceAvailability === "function") setSimulatorEvidenceAvailability(h.priority_breakdown.factors);
         var simScoreEl = document.getElementById("simResultScore");
         if (simScoreEl && h.priority_score != null) {
           simScoreEl.textContent = Number(h.priority_score).toFixed(1);

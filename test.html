@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Google Map Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .search-box { margin-bottom: 15px; }
+    input { padding: 8px; width: 300px; font-size: 14px; }
+    button { padding: 8px 15px; font-size: 14px; cursor: pointer; }
+    iframe { width: 100%; height: 450px; border: 0; }
+  </style>
+</head>
+<body>
+
+  <div class="search-box">
+    <input type="text" id="locationInput" placeholder="Enter a city, landmark, or address...">
+    <button onclick="updateMap()">Search Map</button>
+  </div>
+
+  <!-- Embedded Google Map -->
+  <iframe 
+    id="mapIframe" 
+    src="https://maps.google.com/maps?q=New%20York&t=&z=13&ie=UTF8&iwloc=&output=embed">
+  </iframe>
+
+  <script>
+    function updateMap() {
+      var location = document.getElementById('locationInput').value.trim();
+      
+      if (location !== "") {
+        // Encode location string to handle spaces and special characters
+        var encodedLocation = encodeURIComponent(location);
+        
+        // Update the iframe source
+        var mapIframe = document.getElementById('mapIframe');
+        mapIframe.src = "https://maps.google.com/maps?q=" + encodedLocation + "&t=&z=13&ie=UTF8&iwloc=&output=embed";
+      }
+    }
+
+    // Allow pressing "Enter" key to search
+    document.getElementById('locationInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        updateMap();
+      }
+    });
+  </script>
+
+</body>
+</html>
+<!-- <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d971.8066962198627!2d77.58995556958936!3d13.021225199206182!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae17b0cd46b421%3A0xdf8238b51b8be04b!2sDHRUVA%20AURORA!5e0!3m2!1sen!2sin!4v1790689487152!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin">
+    
+</iframe> -->

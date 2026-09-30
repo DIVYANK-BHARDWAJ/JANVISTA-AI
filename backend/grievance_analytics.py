@@ -18,6 +18,7 @@ from collections import defaultdict
 from typing import Dict, List, Any, Optional
 
 from priority_engine import calculate_priority_score
+from ndap_service import get_district_service_gap, get_district_vulnerability
 
 
 # ---------------------------------------------------------------------------
@@ -84,10 +85,10 @@ PROJECT_TEMPLATES = {
             f"identified via {count:,} citizen demand signals. Nearest tertiary facilities "
             f"require arduous inter-district transit exceeding golden-hour survival windows."
         ),
-        "capex": 22.5,
-        "pop": 185000,
-        "transit_cur": 85,
-        "transit_tar": 25,
+        "capex": None,
+        "pop": None,
+        "transit_cur": None,
+        "transit_tar": None,
         "beds_existing": 20,
         "beds_required": 100,
     },
@@ -97,10 +98,10 @@ PROJECT_TEMPLATES = {
             f"Severe seasonal ground water depletion and chemical contamination in {area}, {dist}. "
             f"Impacting agrarian and rural households identified via {count:,} verified citizen complaints."
         ),
-        "capex": 14.8,
-        "pop": 120000,
-        "transit_cur": 65,
-        "transit_tar": 20,
+        "capex": None,
+        "pop": None,
+        "transit_cur": None,
+        "transit_tar": None,
         "beds_existing": 0,
         "beds_required": 0,
     },
@@ -110,10 +111,10 @@ PROJECT_TEMPLATES = {
             f"Logistics and agricultural transport bottleneck between mandi yards and national highway "
             f"connecting {area}, {dist} to regional distribution hubs. Identified via {count:,} citizen complaints."
         ),
-        "capex": 19.2,
-        "pop": 95000,
-        "transit_cur": 70,
-        "transit_tar": 25,
+        "capex": None,
+        "pop": None,
+        "transit_cur": None,
+        "transit_tar": None,
         "beds_existing": 0,
         "beds_required": 0,
     },
@@ -123,10 +124,10 @@ PROJECT_TEMPLATES = {
             f"Unreliable rural grid power causing significant post-harvest horticultural and grain losses "
             f"across farming panchayats in {area}, {dist}. Raised by {count:,} affected citizens."
         ),
-        "capex": 9.6,
-        "pop": 68000,
-        "transit_cur": 50,
-        "transit_tar": 15,
+        "capex": None,
+        "pop": None,
+        "transit_cur": None,
+        "transit_tar": None,
         "beds_existing": 0,
         "beds_required": 0,
     },
@@ -136,10 +137,10 @@ PROJECT_TEMPLATES = {
             f"Monsoon waterlogging, open drainage overflow, and untreated effluent discharge creating "
             f"acute public health hazards in {area}, {dist}. Flagged by {count:,} residents."
         ),
-        "capex": 11.4,
-        "pop": 52000,
-        "transit_cur": 45,
-        "transit_tar": 15,
+        "capex": None,
+        "pop": None,
+        "transit_cur": None,
+        "transit_tar": None,
         "beds_existing": 0,
         "beds_required": 0,
     },
@@ -151,10 +152,10 @@ DEFAULT_TEMPLATE = {
         f"Multi-sector infrastructure demand identified in {area}, {dist} via {count:,} citizen grievance signals. "
         f"Requires coordinated district-level planning and budget allocation."
     ),
-    "capex": 15.0,
-    "pop": 80000,
-    "transit_cur": 60,
-    "transit_tar": 20,
+    "capex": None,
+    "pop": None,
+    "transit_cur": None,
+    "transit_tar": None,
     "beds_existing": 0,
     "beds_required": 0,
 }
@@ -167,6 +168,10 @@ DEFAULT_TEMPLATE = {
 def _urgency_score(urgency_input: Any) -> float:
     """Returns the numeric weight for a given urgency string or grievance dict using NLP text classification."""
     if isinstance(urgency_input, dict):
+        ai = urgency_input.get("ai_analysis") or {}
+        if ai.get("used_for_priority") and ai.get("immediacy") is not None:
+            stated_score = _urgency_score(urgency_input.get("urgency", "MODERATE"))
+            return min(1.0, round((stated_score * 0.4) + (float(ai["immediacy"]) / 100 * 0.6), 3))
         stated = (urgency_input.get("urgency") or "MODERATE").strip().upper()
         if stated == "CRITICAL":
             return URGENCY_WEIGHTS["CRITICAL"]
@@ -185,8 +190,18 @@ def _normalize_demand(count: int, base: int = DEMAND_NORM_BASE) -> float:
     """Maps a raw grievance count to a 0–100 demand signal (soft-cap at 100)."""
     if count <= 0:
         return 0.0
-    raw = (count / base) * 50.0     # 50 grievances → 50, 100 → 100
+    # Five independent submissions saturate this transparent early-demand
+    # measure.  It is not an estimate of population need or facility gap.
+    raw = count * 20.0
     return round(min(100.0, raw), 1)
+
+
+MINIMUM_EVIDENCE_RECORDS = 3
+
+
+def _is_priority_ready(grievances: List[dict]) -> bool:
+    """Any submission is visible as an explicitly labelled early signal."""
+    return bool(grievances)
 
 
 def _urgency_signal(grievances: List[dict]) -> float:
@@ -196,7 +211,7 @@ def _urgency_signal(grievances: List[dict]) -> float:
     """
     if not grievances:
         return 50.0
-    weighted_sum = sum(_urgency_score(g.get("urgency", "MODERATE")) for g in grievances)
+    weighted_sum = sum(_urgency_score(g) for g in grievances)
     max_possible = len(grievances) * 1.0   # if all were CRITICAL
     return round(min(100.0, (weighted_sum / max_possible) * 100.0), 1)
 
@@ -210,13 +225,11 @@ def _gap_index(grievances: List[dict]) -> float:
     if not grievances:
         return 70.0
     total = len(grievances)
-    critical_high = sum(
-        1 for g in grievances
-        if g.get("urgency", "").upper() in ("CRITICAL", "HIGH")
-    )
-    base_gap = round((critical_high / total) * 100.0, 1)
-    # Blend with a minimum floor of 55 to keep the index plausible
-    return round(max(55.0, min(99.9, base_gap + 10.0)), 1)
+    severity_scores = []
+    for g in grievances:
+        ai = g.get("ai_analysis") or {}
+        severity_scores.append(float(ai["severity"]) if ai.get("used_for_priority") and ai.get("severity") is not None else _urgency_score(g) * 100)
+    return round(max(0.0, min(100.0, sum(severity_scores) / total)), 1)
 
 
 def _sample_citizen_quotes(grievances: List[dict], n: int = 3) -> List[str]:
@@ -333,26 +346,29 @@ def compute_district_analytics(
 
     # 4A. First: Create Hotspots for each Village entered by citizens
     for v_idx, (v_name, v_list) in enumerate(village_grievances.items()):
+        if not _is_priority_ready(v_list):
+            continue
         ug = v_list[0]
         v_count = len(v_list)
         top_cat = ug.get("category", "Healthcare")
         urg_str = ug.get("urgency", "CRITICAL").upper()
         # Authentic factor computation from live citizen grievance
-        f_demand = min(99.0, 94.0 + (v_count - 1) * 2.0)
-        f_gap = 99.9 if urg_str in ("CRITICAL", "HIGH") else 88.0
-        f_vuln = 86.5
-        f_acc = 88.0
-        f_urgency = 100.0 if urg_str == "CRITICAL" else (80.0 if urg_str == "HIGH" else 60.0)
-        f_inv = 74.0
-        status = "CRITICAL" if urg_str == "CRITICAL" else "HIGH"
+        f_demand = _normalize_demand(v_count)
+        # Citizen feedback establishes demand, not a verified facility gap.
+        f_gap = None
+        f_vuln = None
+        f_acc = None
+        f_urgency = _urgency_signal(v_list)
+        f_inv = None
+        status = "EMERGING" if v_count < MINIMUM_EVIDENCE_RECORDS else ("CRITICAL" if urg_str == "CRITICAL" else "HIGH")
         urgency_label = "High" if urg_str in ("CRITICAL", "HIGH") else "Moderate"
 
         sources = {
             "demand": f"Multilingual Grievance Signals ({lang_label}, English — {district} Ledger)",
-            "gap": f"District Facility Audit & Capacity Gap Engine ({district})",
+            "gap": "No validated facility-coverage dataset connected",
             "vulnerability": f"NITI Aayog Multidimensional Vulnerability Index (MVI — {district} Block Level)",
             "accessibility_deficit": f"Spatial Travel Time Network Model ({district} Rural to Tertiary Hubs)",
-            "urgency": f"Keyword & Emergency Intent Classifier ({district} Collectorate)",
+            "urgency": "Citizen tier + Gemini immediacy (or marked deterministic fallback)",
             "investment_mismatch": "District Capex Allocation Ledger vs. Demand Ratio",
         }
 
@@ -375,14 +391,11 @@ def compute_district_analytics(
         c_name = ug.get("name", "Citizen").strip()
         c_desc = ug.get("description", "").strip()
 
-        h_title = f"Establish 100-Bed Sub-Divisional Hospital & Emergency Trauma Unit in {v_name}" if top_cat == "Healthcare" else tpl["title_fn"](v_name, district)
+        h_title = f"Citizen-reported {top_cat} signal in {v_name}"
         h_desc = (
-            f"Critical emergency healthcare and trauma transit deficit in {v_name}, {district} identified via {v_count} live citizen demand signal{'s' if v_count != 1 else ''}. "
-            f"Citizen {c_name} ({v_name}) reported: \"{c_desc}\" "
-            f"Nearest tertiary facilities require arduous inter-district transit exceeding golden-hour survival windows."
-        ) if top_cat == "Healthcare" else (
-            f"Critical infrastructure deficit in {v_name}, {district} ({top_cat}) identified via {v_count} live citizen demand signal{'s' if v_count != 1 else ''}. "
-            f"Citizen {c_name} reported: \"{c_desc}\""
+            f"{v_count} live citizen demand signal{'s' if v_count != 1 else ''} were submitted for "
+            f"{top_cat} in {v_name}, {district}. Latest submitted description: \"{c_desc}\" "
+            "This is an early demand signal, not a verified infrastructure-gap finding."
         )
 
         area_hotspots.append({
@@ -394,7 +407,8 @@ def compute_district_analytics(
             "district": district,
             "state": state,
             "category": top_cat,
-            "gap_index": f_gap,
+            "gap_index": None,
+            "demand_severity": _gap_index(v_list),
             "priority_score": mca["score"],
             "citizen_requests": v_count,
             "status": status,
@@ -421,7 +435,7 @@ def compute_district_analytics(
         })
 
     # Sort hotspots: areas with citizen grievances first, then by priority score
-    area_hotspots.sort(key=lambda h: (h["citizen_requests"], h["priority_score"]), reverse=True)
+    area_hotspots.sort(key=lambda h: (h["priority_score"], h["citizen_requests"]), reverse=True)
     for i, h in enumerate(area_hotspots):
         h["rank"] = i + 1
 
@@ -432,7 +446,7 @@ def compute_district_analytics(
             "state": state,
             "scope": "district",
             "total_districts": 0,
-            "total_grievances": 0,
+            "total_grievances": total_count,
             "banner": {
                 "title": f"{district} District — No Grievances Yet",
                 "subtitle": f"No citizen grievances have been submitted for {district}, {state} yet.",
@@ -441,11 +455,11 @@ def compute_district_analytics(
             "spotlight": None,
             "hotspots": [],
             "kpis": [
-                {"id": "citizen-requests", "title": "Citizen Requests", "value": "0", "subtitle": f"No live grievances in {district}", "accent": "sky"},
-                {"id": "demand-clusters", "title": "Demand Clusters", "value": "0 Clusters", "subtitle": f"{district} taluk & ward spatial grouping", "accent": "purple"},
+                {"id": "citizen-requests", "title": "Citizen Requests", "value": f"{total_count:,}", "subtitle": f"Live submissions in {district}", "accent": "sky"},
+                {"id": "demand-clusters", "title": "Demand Clusters", "value": "0 ranked clusters", "subtitle": "Need 3 Gemini-validated signals in one area", "accent": "purple"},
                 {"id": "hotspots-detected", "title": "Hotspots Detected", "value": "0 Areas / Taluks", "subtitle": "No active hotspots", "accent": "rose"},
-                {"id": "max-gap-index", "title": "Max Gap Index", "value": "0 %", "subtitle": "No grievance data", "accent": "amber"},
-                {"id": "top-priority-score", "title": "Top Priority Score", "value": "0 / 100", "subtitle": f"No data for {district}", "accent": "emerald"},
+                {"id": "max-gap-index", "title": "Gap Index", "value": "N/A", "subtitle": "Insufficient evidence for a gap calculation", "accent": "amber"},
+                {"id": "top-priority-score", "title": "Top Priority Score", "value": "N/A", "subtitle": "Need 3 Gemini-validated signals in one area", "accent": "emerald"},
             ],
             "evidence_chain": {},
             "recommendations": [],
@@ -522,9 +536,9 @@ def compute_district_analytics(
         },
         {
             "id": "max-gap-index",
-            "title": "Max Gap Index",
-            "value": f"{rank1['gap_index']} %",
-            "subtitle": f"{rank1['area']} {rank1['category']} Deficit",
+            "title": "Infrastructure Gap Data",
+            "value": "N/A",
+            "subtitle": "Facility-coverage data not connected",
             "accent": "amber",
         },
         {
@@ -618,7 +632,9 @@ def compute_state_analytics(
     for g in state_grievances:
         dist = (g.get("district") or "Unknown").strip()
         cat = (g.get("category") or "Healthcare").strip()
-        dist_cat_clusters[dist][cat].append(g)
+        # A hotspot represents one sector in one district.  Do not merge
+        # Drinking Water and Education just because they share a district.
+        dist_cat_clusters[f"{dist}|||{cat}"][cat].append(g)
 
     categories_ordered = [
         "Healthcare", "Drinking Water", "Roads & Bridges",
@@ -642,11 +658,14 @@ def compute_state_analytics(
     state_hotspots = []
 
     # Use dist_cat_clusters which only contains districts with actual grievances
-    for idx, (d_name, d_cats) in enumerate(dist_cat_clusters.items()):
+    for idx, (cluster_key, d_cats) in enumerate(dist_cat_clusters.items()):
+        d_name = cluster_key.split("|||", 1)[0]
         d_grievances = [g for grv_list in d_cats.values() for g in grv_list]
         d_count = len(d_grievances)
         if d_count == 0:
             continue  # skip districts with no grievances
+        if not _is_priority_ready(d_grievances):
+            continue
 
         # Representative grievance (highest urgency first)
         ug = sorted(d_grievances, key=lambda g: 0 if g.get("urgency","").upper()=="CRITICAL" else 1)[0]
@@ -655,20 +674,23 @@ def compute_state_analytics(
         top_cat = max(d_cats, key=lambda c: len(d_cats[c]))
 
         has_crit = any(g.get("urgency","").upper() == "CRITICAL" for g in d_grievances)
-        f_gap    = 99.9 if has_crit else _gap_index(d_grievances)
-        f_demand = min(99.0, 94.0 + (d_count - 1) * 2.0)
-        f_vuln   = round(86.0 - (idx * 2.0), 1)
-        f_acc    = round(88.5 - (idx * 2.5), 1)
-        f_urgency = 100.0 if has_crit else 80.0
-        f_inv    = round(75.0 - (idx * 1.5), 1)
+        # Citizen reports alone cannot prove a facility-coverage gap.
+        ndap_gap = get_district_service_gap(state, d_name, top_cat)
+        f_gap = ndap_gap.get("score")
+        f_demand = _normalize_demand(d_count)
+        ndap_vulnerability = get_district_vulnerability(state, d_name)
+        f_vuln = ndap_vulnerability.get("score")
+        f_acc    = None
+        f_urgency = _urgency_signal(d_grievances)
+        f_inv    = None
         status   = "CRITICAL" if has_crit else "HIGH"
 
         sources = {
             "demand": f"Multilingual Ingestion Signals ({state} State Registry)",
-            "gap": f"Facility Audit & Gap Engine ({d_name}, {state})",
-            "vulnerability": f"Multidimensional Vulnerability Index (MVI — {d_name})",
+            "gap": ndap_gap.get("source", "No matching NDAP service-coverage indicator"),
+            "vulnerability": ndap_vulnerability.get("source", "NDAP demographics source unavailable"),
             "accessibility_deficit": f"Spatial Travel Model ({d_name} to Regional Centers)",
-            "urgency": f"Keyword & Intent Urgency Classifier ({state} Apex Portal)",
+            "urgency": "Citizen tier + Gemini immediacy (or marked deterministic fallback)",
             "investment_mismatch": f"State Capex Ledger ({state} Infrastructure Board)",
         }
 
@@ -729,15 +751,16 @@ def compute_state_analytics(
             "village":          v_name,
             "category":         top_cat,
             "gap_index":        f_gap,
+            "demand_severity":  _gap_index(d_grievances),
             "priority_score":   mca["score"],
             "citizen_requests": d_count,
             "status":           status,
             "urgency":          "High",
-            "title":            tpl["title_fn"](d_name, state),
+            "title":            f"Citizen-reported {top_cat} signal in {d_name}",
             "description": (
-                f"Critical infrastructure deficit in {d_name} ({top_cat}) identified via "
-                f"{d_count} live citizen demand signal{'s' if d_count!=1 else ''}. "
-                f"Citizen {c_name} ({v_name}) reported: \"{c_desc[:120]}\""
+                f"{d_count} live citizen demand signal{'s' if d_count!=1 else ''} were submitted for "
+                f"{top_cat} in {d_name}. Latest submitted description: \"{c_desc[:120]}\" "
+                "This is an early demand signal, not a verified infrastructure-gap finding."
             ),
             "estimated_cost_cr":  tpl["capex"],
             "impacted_population": tpl["pop"],
@@ -757,7 +780,7 @@ def compute_state_analytics(
         })
 
     # Sort: highest citizen_requests first, then priority_score
-    state_hotspots.sort(key=lambda x: (x["citizen_requests"], x["priority_score"]), reverse=True)
+    state_hotspots.sort(key=lambda x: (x["priority_score"], x["citizen_requests"]), reverse=True)
     for i, h in enumerate(state_hotspots):
         h["rank"] = i + 1
 
@@ -765,16 +788,16 @@ def compute_state_analytics(
     if not state_hotspots:
         return {
             "kpis": [
-                {"id":"citizen-requests","title":"Citizen Requests","value":"0","subtitle":f"No live grievances in {state}","accent":"sky"},
-                {"id":"demand-clusters","title":"Demand Clusters","value":"0 Clusters","subtitle":f"{state} spatial grouping","accent":"purple"},
+                {"id":"citizen-requests","title":"Citizen Requests","value":f"{total_count:,}","subtitle":f"Live submissions in {state}","accent":"sky"},
+                {"id":"demand-clusters","title":"Demand Clusters","value":"0 ranked clusters","subtitle":"Need 3 Gemini-validated signals in one district", "accent":"purple"},
                 {"id":"hotspots-detected","title":"Hotspots Detected","value":"0 Districts","subtitle":"No active hotspots","accent":"rose"},
-                {"id":"max-gap-index","title":"Max Gap Index","value":"0 %","subtitle":"No grievance data","accent":"amber"},
-                {"id":"top-priority-score","title":"Top Priority Score","value":"0 / 100","subtitle":f"No data for {state}","accent":"emerald"},
+                {"id":"max-gap-index","title":"Gap Index","value":"N/A","subtitle":"Insufficient evidence for a gap calculation","accent":"amber"},
+                {"id":"top-priority-score","title":"Top Priority Score","value":"N/A","subtitle":"Need 3 Gemini-validated signals in one district", "accent":"emerald"},
             ],
             "hotspots": [],
             "spotlight": None,
             "evidence_chain": {},
-            "total_grievances": 0,
+            "total_grievances": total_count,
             "total_districts": len(district_names),
         }
 
@@ -889,8 +912,8 @@ def compute_state_analytics(
         {
             "id": "max-gap-index",
             "title": "Max Gap Index",
-            "value": f"{rank1['gap_index']} %",
-            "subtitle": f"{rank1_dist} {rank1['category']} Deficit",
+            "value": f"{rank1['gap_index']} %" if rank1["gap_index"] is not None else "N/A",
+            "subtitle": f"{rank1_dist} NDAP service-coverage shortfall" if rank1["gap_index"] is not None else "No matching NDAP indicator",
             "accent": "amber",
         },
         {
@@ -955,6 +978,8 @@ def compute_national_analytics(hotspots_template: List[dict]) -> Dict[str, Any]:
         d_name = parts[0]
         s_name = parts[1] if len(parts) > 1 else "India"
         d_count = len(grv_list)
+        if not _is_priority_ready(grv_list):
+            continue
 
         # Representative grievance (highest urgency first)
         ug = sorted(grv_list, key=lambda g: 0 if g.get("urgency", "").upper() == "CRITICAL" else 1)[0]
@@ -964,12 +989,12 @@ def compute_national_analytics(hotspots_template: List[dict]) -> Dict[str, Any]:
         )
 
         has_crit = any(g.get("urgency", "").upper() == "CRITICAL" for g in grv_list)
-        f_gap = 99.9 if has_crit else _gap_index(grv_list)
-        f_demand = min(99.0, 94.0 + (d_count - 1) * 2.0)
-        f_vuln = round(86.0 - (idx * 2.0), 1)
-        f_acc = round(88.5 - (idx * 2.5), 1)
-        f_urgency = 100.0 if has_crit else 80.0
-        f_inv = round(75.0 - (idx * 1.5), 1)
+        f_gap = _gap_index(grv_list)
+        f_demand = _normalize_demand(d_count)
+        f_vuln = None
+        f_acc = None
+        f_urgency = _urgency_signal(grv_list)
+        f_inv = None
         status = "CRITICAL" if has_crit else "HIGH"
 
         tpl = PROJECT_TEMPLATES.get(top_cat, DEFAULT_TEMPLATE)
@@ -1024,7 +1049,7 @@ def compute_national_analytics(hotspots_template: List[dict]) -> Dict[str, Any]:
         })
 
     # Sort by priority (citizen_requests DESC, priority_score DESC)
-    live_hotspots.sort(key=lambda x: (x["citizen_requests"], x["priority_score"]), reverse=True)
+    live_hotspots.sort(key=lambda x: (x["priority_score"], x["citizen_requests"]), reverse=True)
     for i, h in enumerate(live_hotspots):
         h["rank"] = i + 1
 

@@ -18,7 +18,7 @@ describe("Priority Engine (v1.0.0)", () => {
     expect(priority.score).toBe(87.4);
     expect(priority.methodologyVersion).toBe("v1.0.0");
     expect(priority.factors.length).toBe(6);
-    expect(priority.dataClassification).toBe("SYNTHETIC_DATA");
+    expect(priority.dataClassification).toBe("PUBLIC_REAL_DATA");
   });
 
   it("should calculate exact weighted score sum across all 6 factors", () => {

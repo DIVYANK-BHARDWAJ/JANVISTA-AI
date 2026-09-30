@@ -226,7 +226,7 @@ def _load_persisted_grievances():
 
     # Also sync any records in citizen_requests.json
     req_file = DATA_DIR / "citizen_requests.json"
-    if req_file.exists():
+    if req_file.exists() and req_file.stat().st_size > 0:
         try:
             with open(req_file, "r", encoding="utf-8") as f:
                 reqs = json.load(f)
@@ -267,6 +267,26 @@ def _load_persisted_grievances():
 _load_persisted_grievances()
 
 
+def _refresh_grievances_from_disk() -> None:
+    """Respect external ledger deletion/edits without requiring a Flask restart.
+
+    The JSON file is the persistence authority. This prevents a server's
+    in-memory list from continuing to expose records after an operator has
+    intentionally cleared the ledger file.
+    """
+    if not GRIEVANCES_FILE.exists() or GRIEVANCES_FILE.stat().st_size == 0:
+        CITIZEN_GRIEVANCES.clear()
+        return
+    try:
+        with open(GRIEVANCES_FILE, "r", encoding="utf-8") as f:
+            saved = json.load(f)
+        if isinstance(saved, list):
+            CITIZEN_GRIEVANCES[:] = saved
+    except (OSError, json.JSONDecodeError):
+        # Never replace an in-memory ledger with corrupt data.
+        pass
+
+
 def add_citizen_grievance(
     name: str,
     state: str,
@@ -276,7 +296,9 @@ def add_citizen_grievance(
     phone: str = "",
     email: str = "",
     village_or_ward: str = "",
-    urgency: str = "MODERATE"
+    urgency: str = "MODERATE",
+    ai_analysis: dict = None,
+    map_accessibility: dict = None,
 ):
     """
     Records a new citizen grievance and returns the created record with Tracking ID.
@@ -300,6 +322,8 @@ def add_citizen_grievance(
         "village_or_ward": village_or_ward.strip() if village_or_ward else f"{district.strip()} Rural Area",
         "category": category.strip(),
         "urgency": urgency.strip().upper(),
+        "ai_analysis": ai_analysis or {},
+        "map_accessibility": map_accessibility or {},
         "description": description.strip(),
         "status": "UNDER_REVIEW",
         "department": f"District {category.strip()} Administration",
@@ -324,6 +348,25 @@ def add_citizen_grievance(
 
     _persist_grievances()
     return new_record
+
+
+def reprocess_unvalidated_grievances():
+    """Retry Gemini enrichment for records saved during an earlier API failure."""
+    from gemini_service import analyse_grievance
+
+    _refresh_grievances_from_disk()
+    updated = 0
+    for record in CITIZEN_GRIEVANCES:
+        analysis = record.get("ai_analysis") or {}
+        if analysis.get("used_for_priority") is True:
+            continue
+        record["ai_analysis"] = analyse_grievance(
+            record.get("description", ""), record.get("urgency", "MODERATE")
+        )
+        updated += 1
+    if updated:
+        _persist_grievances()
+    return {"processed": updated, "total": len(CITIZEN_GRIEVANCES)}
 
 
 def update_citizen_grievance_status(
@@ -378,6 +421,8 @@ def get_citizen_grievances(
     Returns filtered list of citizen grievances based on official oversight criteria.
     Guarantees rich records for any State or District requested.
     """
+    _refresh_grievances_from_disk()
+
     if state or district:
         ensure_location_grievances(state=state, district=district)
 
@@ -431,7 +476,33 @@ def get_state_dashboard_data(state_name: str):
                 break
 
     if not matched_sp:
-        matched_sp = list(STATE_PLANNER_CREDENTIALS.values())[0]
+        # A dashboard query is not an authentication request.  Preserve the
+        # requested State/UT even where there is no State Planner account
+        # (for example, several Union Territories), instead of silently
+        # showing Karnataka data.
+        resolved_state = next(
+            (name for name in STATE_CODES if name.casefold() == state_clean),
+            None,
+        )
+        if not resolved_state:
+            return {
+                "state": state_name.strip() or "India",
+                "state_code": "IN",
+                "headquarters": "Not specified",
+                "total_districts": 0,
+                "banner": {
+                    "title": "UNKNOWN JURISDICTION",
+                    "subtitle": "Select a valid Indian State or Union Territory.",
+                    "data_classification": "LIVE_CITIZEN_DATA",
+                },
+                "kpis": [], "spotlight": None, "hotspots": [],
+                "evidence_chain": {}, "pipeline": PIPELINE_STAGES,
+            }
+        matched_sp = {
+            "state": resolved_state,
+            "state_code": STATE_CODES[resolved_state],
+            "headquarters": "State / UT Headquarters",
+        }
 
     actual_state_name = matched_sp["state"]
     state_code = matched_sp["state_code"]

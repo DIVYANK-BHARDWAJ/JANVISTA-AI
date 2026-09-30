@@ -1,4 +1,5 @@
 import datetime
+import os
 import re
 import sys
 from pathlib import Path
@@ -24,6 +25,7 @@ from data import (
     update_citizen_grievance_status,
     get_state_dashboard_data,
     get_district_dashboard_data,
+    reprocess_unvalidated_grievances,
     CITIZEN_GRIEVANCES,
 )
 from credentials import (
@@ -38,6 +40,9 @@ from credentials import (
 from priority_engine import calculate_priority_score
 from grievance_analytics import compute_national_analytics
 from export_service import get_brief_data, generate_brief_csv, generate_brief_pdf
+from gemini_service import analyse_grievance
+from google_maps_service import healthcare_accessibility
+from ndap_service import get_district_context, integration_status as ndap_integration_status
 
 
 
@@ -102,6 +107,27 @@ def api_index():
     })
 
 
+@app.route("/api/integrations/status", methods=["GET"])
+def integration_status():
+    """Safe configuration check: reports no keys or key material."""
+    return jsonify({
+        "success": True,
+        "gemini_configured": bool(os.getenv("GEMINI_API_KEY", "").strip()),
+        "google_maps_configured": bool((os.getenv("GOOGLE_MAPS_API_KEY") or os.getenv("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY") or "").strip()),
+        "ndap": ndap_integration_status(),
+        "required_google_maps_apis": ["Places API (New)", "Routes API", "Geocoding API"],
+    })
+
+
+@app.route("/api/ndap/district-context", methods=["GET"])
+def ndap_district_context():
+    """Return labelled, source-backed NDAP measures for a selected district."""
+    state, district = request.args.get("state", "").strip(), request.args.get("district", "").strip()
+    if not state or not district:
+        return jsonify({"success": False, "error": "state and district are required."}), 400
+    return jsonify({"success": True, "state": state, "district": district, "sources": get_district_context(state, district)})
+
+
 
 @app.route("/api/dashboard/overview", methods=["GET"])
 def get_dashboard_overview():
@@ -149,11 +175,11 @@ def get_dashboard_overview():
                     "data_classification": "LIVE_CITIZEN_DATA",
                 },
                 "kpis": [
-                    {"id": "citizen-requests", "title": "Citizen Requests", "value": "0", "subtitle": "No submissions yet", "accent": "sky"},
-                    {"id": "demand-clusters", "title": "Demand Clusters", "value": "0 Clusters", "subtitle": "Spatial & semantic aggregation", "accent": "purple"},
-                    {"id": "hotspots-detected", "title": "Hotspots Detected", "value": "0 Regions", "subtitle": "No active hotspots", "accent": "rose"},
-                    {"id": "max-gap-index", "title": "Max Gap Index", "value": "N/A", "subtitle": "Awaiting citizen submissions", "accent": "amber"},
-                    {"id": "top-priority-score", "title": "Top Priority Score", "value": "N/A", "subtitle": "Model v1.0.0 (Audited)", "accent": "emerald"},
+                    {"id": "citizen-requests", "title": "Citizen Requests", "value": f"{total_requests:,}", "subtitle": "Live submissions awaiting sufficient evidence", "accent": "sky"},
+                    {"id": "demand-clusters", "title": "Demand Clusters", "value": "0 ranked clusters", "subtitle": "Need 3 Gemini-validated signals per district", "accent": "purple"},
+                    {"id": "hotspots-detected", "title": "Hotspots Detected", "value": "0 Regions", "subtitle": "No evidence-qualified hotspots", "accent": "rose"},
+                    {"id": "max-gap-index", "title": "Gap Index", "value": "N/A", "subtitle": "Insufficient evidence for a gap calculation", "accent": "amber"},
+                    {"id": "top-priority-score", "title": "Top Priority Score", "value": "N/A", "subtitle": "Ranking begins after evidence threshold", "accent": "emerald"},
                 ],
                 "spotlight": None,
                 "hotspots": [],
@@ -165,12 +191,19 @@ def get_dashboard_overview():
 
     # Recompute top priority score from the leading hotspot
     top_priority = calculate_priority_score(
-        demand=top_hotspot.get("raw_factors", {}).get("demand", 94.0),
-        gap=top_hotspot.get("gap_index", 91.2),
-        vulnerability=top_hotspot.get("raw_factors", {}).get("vulnerability", 86.5),
-        accessibility_deficit=top_hotspot.get("raw_factors", {}).get("accessibility_deficit", 88.0),
-        urgency=top_hotspot.get("raw_factors", {}).get("urgency", 100.0),
-        investment_mismatch=top_hotspot.get("raw_factors", {}).get("investment_mismatch", 74.0),
+        demand=top_hotspot.get("raw_factors", {}).get("demand"),
+        gap=top_hotspot.get("gap_index"),
+        vulnerability=top_hotspot.get("raw_factors", {}).get("vulnerability"),
+        accessibility_deficit=top_hotspot.get("raw_factors", {}).get("accessibility_deficit"),
+        urgency=top_hotspot.get("raw_factors", {}).get("urgency"),
+        investment_mismatch=top_hotspot.get("raw_factors", {}).get("investment_mismatch"),
+        custom_sources={
+            "gap": "Citizen tier + Gemini severity (or marked deterministic fallback)",
+            "vulnerability": "Pending district vulnerability dataset",
+            "accessibility_deficit": "Pending validated travel-time dataset",
+            "urgency": "Citizen tier + Gemini immediacy (or marked deterministic fallback)",
+            "investment_mismatch": "Pending national capex ledger",
+        },
     )
 
     kpis = [
@@ -251,16 +284,15 @@ def get_dashboard_overview():
             "real_grievance_count": total_requests,
             "citizen_quote_local": (top_ug.get("description") or ""),
             "citizen_quote_en": (top_ug.get("description") or ""),
-            "facility_audit_title": "National Infrastructure & Facility Audit (2025-26)",
+            "facility_audit_title": "Facility dataset status",
             "facility_audit_finding": (
-                f"National Planning Commission verified critical deficit in {top_hotspot['district']} "
-                f"({top_hotspot['category']}). {total_requests} citizen grievance(s) corroborate the deficit."
+                f"No validated facility dataset is loaded for {top_hotspot['district']} yet. "
+                f"{total_requests} citizen grievance(s) are the available demand evidence."
             ),
-            "spatial_transit_title": "National Spatial Travel Time GIS Network Model",
+            "spatial_transit_title": "Travel-time dataset status",
             "spatial_transit_finding": (
-                f"Average transit time from {top_hotspot.get('area', top_hotspot['district'])} to nearest "
-                f"functional facility: {top_hotspot.get('current_transit_mins', 75)} minutes "
-                f"(Target: {top_hotspot.get('target_transit_mins', 25)} minutes)."
+                "Pending validated facility-routing baseline. Transit is displayed only for healthcare "
+                "recommendations after this dataset is loaded."
             ),
             "official_endorsement": (
                 f"National Planning Commission: Prioritized for in-principle administrative sanction "
@@ -518,6 +550,13 @@ def dynamic_priority_calculation():
     })
 
 
+@app.route("/api/citizen/grievances/reprocess-ai", methods=["POST"])
+def reprocess_grievance_ai():
+    """Explicitly retry Gemini for older fallback records."""
+    result = reprocess_unvalidated_grievances()
+    return jsonify({"success": True, **result})
+
+
 @app.route("/api/citizen/grievance", methods=["POST"])
 def submit_grievance():
     """
@@ -561,6 +600,11 @@ def submit_grievance():
     if not description:
         return jsonify({"success": False, "error": "Grievance details are required."}), 400
 
+    ai_analysis = analyse_grievance(description, urgency)
+    map_accessibility = (
+        healthcare_accessibility(village_or_ward, district, state)
+        if category.strip().lower() == "healthcare" else {"status": "NOT_APPLICABLE", "message": "Routes are calculated only for healthcare requests."}
+    )
     new_record = add_citizen_grievance(
         name=name,
         state=state,
@@ -571,6 +615,8 @@ def submit_grievance():
         email=email,
         village_or_ward=village_or_ward,
         urgency=urgency,
+        ai_analysis=ai_analysis,
+        map_accessibility=map_accessibility,
     )
 
     return jsonify({
@@ -578,7 +624,20 @@ def submit_grievance():
         "message": "Grievance submitted successfully into National Decision Intelligence Intake.",
         "tracking_id": new_record["tracking_id"],
         "data": new_record,
+        "ai_analysis": ai_analysis,
+        "map_accessibility": map_accessibility,
     }), 201
+
+
+@app.route("/api/healthcare/accessibility", methods=["POST"])
+def get_healthcare_accessibility():
+    """Calculate live Google Places + Routes evidence without storing a grievance."""
+    body = request.get_json(silent=True) or {}
+    required = ["village_or_ward", "district", "state"]
+    if any(not str(body.get(field, "")).strip() for field in required):
+        return jsonify({"success": False, "error": "village_or_ward, district and state are required."}), 400
+    result = healthcare_accessibility(body["village_or_ward"].strip(), body["district"].strip(), body["state"].strip())
+    return jsonify({"success": result.get("status") == "AVAILABLE", "data": result})
 
 
 @app.route("/api/citizen/grievances", methods=["GET"])
