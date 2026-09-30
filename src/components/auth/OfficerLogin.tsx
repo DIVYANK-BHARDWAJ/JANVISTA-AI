@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Landmark, MapPin, KeyRound, ShieldCheck, ArrowLeft, Lock, RotateCcw, Eye, EyeOff } from "lucide-react";
 import { INDIA_STATES } from "@/lib/data/india-states";
 import { OfficerJurisdiction, UserRole } from "@/types";
@@ -201,7 +201,7 @@ export const OfficerLogin: React.FC<OfficerLoginProps> = ({ role, onSuccess, onC
                     className="w-full bg-slate-50 border border-slate-300 rounded text-sm font-semibold text-slate-800 p-2.5 focus:ring-1 focus:ring-slate-800 disabled:opacity-50"
                   >
                     <option value="">{selectedState ? "— Select District —" : "Select a State first"}</option>
-                    {selectedState?.districts.map((d) => (
+                    {selectedState?.districts.map((d: string) => (
                       <option key={d} value={d}>{d}</option>
                     ))}
                   </select>
